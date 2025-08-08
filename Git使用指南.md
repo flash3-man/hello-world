@@ -135,28 +135,488 @@ git log --follow src/views/HomePage.vue
 ### 高级Git操作
 
 #### 1. 分支管理
+
+##### 1.1 分支基本概念
+Git分支是指向特定提交的可移动指针，它允许您：
+- **并行开发**: 多个功能同时开发互不干扰
+- **代码隔离**: 实验性功能不影响主代码
+- **版本管理**: 维护多个版本或环境
+- **团队协作**: 每个开发者独立工作后合并
+
+##### 1.2 基本分支操作
 ```bash
+# 查看所有分支（本地和远程）
+git branch -a
+
+# 查看当前分支
+git branch
+
+# 创建新分支
+git branch feature/new-function
+
 # 创建并切换到新分支
 git checkout -b feature/goal-management
-
-# 查看所有分支
-git branch -a
+# 或者使用新语法
+git switch -c feature/goal-management
 
 # 切换分支
 git checkout main
+# 或者
+git switch main
 
 # 合并分支
 git merge feature/goal-management
 
-# 删除分支
+# 删除本地分支
 git branch -d feature/goal-management
+
+# 强制删除分支（未合并的分支）
+git branch -D feature/goal-management
+
+# 删除远程分支
+git push origin --delete feature/goal-management
 ```
 
-#### 2. 撤销操作 - 重要功能详解
+##### 1.3 实际开发场景示例
+
+**场景1: 开发新功能 - 员工绩效模块**
+```bash
+# 从主分支创建功能分支
+git checkout main
+git pull origin main
+git checkout -b feature/employee-performance
+
+# 开发过程中的提交
+git add src/views/EmployeePerformance.vue
+git commit -m "feat: 创建员工绩效页面组件"
+
+git add src/api/employee.js
+git commit -m "feat: 添加员工绩效API接口"
+
+git add src/components/PerformanceChart.vue
+git commit -m "feat: 添加绩效图表组件"
+
+# 推送功能分支到远程
+git push origin feature/employee-performance
+
+# 功能完成后合并回主分支
+git checkout main
+git pull origin main
+git merge feature/employee-performance
+git push origin main
+
+# 删除功能分支
+git branch -d feature/employee-performance
+git push origin --delete feature/employee-performance
+```
+
+**场景2: 紧急修复 - 数据显示错误**
+```bash
+# 从主分支创建热修复分支
+git checkout main
+git pull origin main
+git checkout -b hotfix/data-display-error
+
+# 快速修复bug
+git add src/views/HomePage.vue
+git commit -m "fix: 修复首页销售数据计算错误"
+
+# 立即部署修复
+git checkout main
+git merge hotfix/data-display-error
+git push origin main
+
+# 同时合并到开发分支（如果有）
+git checkout develop
+git merge hotfix/data-display-error
+git push origin develop
+
+# 删除修复分支
+git branch -d hotfix/data-display-error
+```
+
+**场景3: 实验性功能 - 新UI设计**
+```bash
+# 创建实验分支
+git checkout -b experiment/new-ui-design
+
+# 大胆尝试新设计
+git add src/styles/new-theme.css
+git commit -m "experiment: 尝试全新的UI主题设计"
+
+# 如果实验成功，合并到功能分支继续开发
+git checkout -b feature/ui-redesign
+git merge experiment/new-ui-design
+
+# 如果实验失败，直接删除
+git checkout main
+git branch -D experiment/new-ui-design
+```
+
+**场景4: 多人协作 - 目标管理功能**
+```bash
+# 开发者A: 创建主功能分支
+git checkout -b feature/goal-management
+git push origin feature/goal-management
+
+# 开发者B: 基于功能分支开发子功能
+git checkout feature/goal-management
+git pull origin feature/goal-management
+git checkout -b feature/goal-management-ui
+
+# 开发者C: 开发API部分
+git checkout feature/goal-management
+git checkout -b feature/goal-management-api
+
+# 各自开发完成后合并回功能主分支
+# 开发者B:
+git checkout feature/goal-management
+git merge feature/goal-management-ui
+
+# 开发者C:
+git checkout feature/goal-management
+git merge feature/goal-management-api
+
+# 最后合并到主分支
+git checkout main
+git merge feature/goal-management
+```
+
+##### 1.4 分支冲突解决
+```bash
+# 当合并时出现冲突
+git checkout main
+git merge feature/goal-management
+# Auto-merging src/views/HomePage.vue
+# CONFLICT (content): Merge conflict in src/views/HomePage.vue
+
+# 查看冲突状态
+git status
+# On branch main
+# You have unmerged paths.
+#   (fix conflicts and run "git commit")
+# 
+# Unmerged paths:
+#   (use "git add <file>..." to mark resolution)
+#         both modified:   src/views/HomePage.vue
+
+# 手动编辑冲突文件
+# <<<<<<< HEAD
+# 主分支的代码
+# =======
+# 功能分支的代码
+# >>>>>>> feature/goal-management
+
+# 解决冲突后标记为已解决
+git add src/views/HomePage.vue
+git commit -m "resolve: 合并目标管理功能时的冲突"
+```
+
+#### 2. 分支策略与工作流
+
+##### 2.1 Git Flow 工作流（推荐用于大型项目）
+```bash
+# 主要分支
+main/master          # 生产环境代码，永远保持稳定
+develop             # 开发环境主分支，集成最新功能
+
+# 辅助分支
+feature/homepage    # 功能分支：开发新功能
+feature/goal-mgmt   # 功能分支：目标管理功能
+feature/employee    # 功能分支：员工绩效功能
+release/v1.0.0      # 发布分支：准备新版本发布
+hotfix/urgent-fix   # 热修复分支：紧急修复生产问题
+
+# 实际操作流程
+# 1. 开发新功能
+git checkout develop
+git pull origin develop
+git checkout -b feature/employee-dashboard
+
+# 2. 功能开发完成后合并到develop
+git checkout develop
+git merge feature/employee-dashboard
+git push origin develop
+
+# 3. 准备发布时创建release分支
+git checkout develop
+git checkout -b release/v1.1.0
+# 在release分支进行最后的测试和bug修复
+
+# 4. 发布完成后合并到main和develop
+git checkout main
+git merge release/v1.1.0
+git tag v1.1.0
+git push origin main --tags
+
+git checkout develop
+git merge release/v1.1.0
+git push origin develop
+```
+
+##### 2.2 GitHub Flow 工作流（推荐用于小型项目）
+```bash
+# 简化的分支模型，只有main分支和功能分支
+main                # 主分支，始终可部署
+feature/new-feature # 功能分支
+
+# 工作流程
+# 1. 从main创建功能分支
+git checkout main
+git pull origin main
+git checkout -b feature/search-functionality
+
+# 2. 开发完成后推送并创建Pull Request
+git push origin feature/search-functionality
+# 在GitHub上创建Pull Request
+
+# 3. 代码评审通过后合并到main
+# 通过GitHub界面合并，或者命令行：
+git checkout main
+git merge feature/search-functionality
+git push origin main
+```
+
+##### 2.3 本项目推荐的分支策略
+基于我们的Vue企业管理系统，推荐以下分支命名和使用规范：
+
+```bash
+# 主分支
+main                    # 生产环境代码
+
+# 功能分支（按模块划分）
+feature/homepage        # 首页相关功能
+feature/employee-mgmt   # 员工管理模块
+feature/goal-tracking   # 目标追踪模块
+feature/performance     # 绩效分析模块
+feature/reporting       # 报表功能
+
+# 修复分支
+fix/homepage-data       # 修复首页数据问题
+fix/goal-calculation    # 修复目标计算错误
+
+# 改进分支
+improve/ui-responsive   # 改进响应式设计
+improve/performance     # 性能优化
+
+# 文档分支
+docs/api-documentation  # API文档更新
+docs/user-guide        # 用户指南
+
+# 实验分支
+experiment/new-chart    # 实验新的图表库
+experiment/mobile-ui    # 移动端UI实验
+```
+
+##### 2.4 团队协作中的分支最佳实践
+
+**规则1: 分支命名规范**
+```bash
+# 好的命名
+feature/employee-performance-chart
+fix/homepage-sales-calculation
+improve/search-performance
+docs/git-workflow-guide
+
+# 不好的命名
+feature/abc
+fix/bug
+new-stuff
+temp
+```
+
+**规则2: 分支生命周期管理**
+```bash
+# 定期清理已合并的分支
+git branch --merged main | grep -v main | xargs git branch -d
+
+# 查看远程已删除但本地还存在的分支
+git remote prune origin
+
+# 清理本地的远程追踪分支
+git branch -r --merged main | grep origin | grep -v main | cut -d'/' -f2- | xargs -I {} git push origin --delete {}
+```
+
+**规则3: 分支保护策略**
+```bash
+# 保护主分支，要求Pull Request和代码评审
+# 这通常在Git托管平台（GitHub/GitLab）上配置
+
+# 本地可以设置git hooks来防止直接push到main
+# 创建 .git/hooks/pre-push 文件：
+#!/bin/bash
+protected_branch='main'
+current_branch=$(git symbolic-ref HEAD | sed -e 's,.*/\(.*\),\1,')
+
+if [ $protected_branch = $current_branch ]; then
+    echo "直接推送到main分支被禁止，请使用Pull Request"
+    exit 1
+fi
+```
+
+##### 2.5 分支管理工具和技巧
+
+**查看分支图形化历史**
+```bash
+# 图形化查看分支历史
+git log --oneline --graph --all
+
+# 更详细的分支图
+git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --all
+
+# 查看特定分支的提交
+git log feature/employee-performance --oneline
+```
+
+**分支比较和差异**
+```bash
+# 比较两个分支的差异
+git diff main..feature/homepage
+
+# 查看分支间的提交差异
+git log main..feature/homepage
+
+# 查看文件在不同分支间的差异
+git diff main:src/views/HomePage.vue feature/homepage:src/views/HomePage.vue
+```
+
+**批量操作分支**
+```bash
+# 查看所有远程分支
+git branch -r
+
+# 拉取所有远程分支到本地
+git fetch --all
+
+# 删除所有已合并的功能分支
+git branch --merged main | grep "feature/" | xargs git branch -d
+
+# 推送所有本地分支到远程
+git push --all origin
+```
+
+##### 2.6 真实项目中的分支应用场景
+
+**场景1: 版本发布管理**
+```bash
+# 当前在开发v1.2.0版本
+git checkout main
+git tag v1.1.0  # 标记当前生产版本
+
+# 创建发布分支进行最后调试
+git checkout -b release/v1.2.0
+
+# 在发布分支修复最后的bug
+git commit -m "fix: 修复发布前发现的数据格式问题"
+
+# 发布完成，合并到main并打标签
+git checkout main
+git merge release/v1.2.0
+git tag v1.2.0
+git push origin main --tags
+
+# 将修复也合并回开发分支
+git checkout develop
+git merge release/v1.2.0
+```
+
+**场景2: 并行开发多个功能**
+```bash
+# 同时开发三个独立功能
+# 功能1: 新的报表系统
+git checkout -b feature/reporting-system
+
+# 功能2: 用户权限管理  
+git checkout main
+git checkout -b feature/user-permissions
+
+# 功能3: 数据导出功能
+git checkout main  
+git checkout -b feature/data-export
+
+# 每个功能独立开发，互不影响
+# 完成后可以选择性合并到主分支
+```
+
+**场景3: 代码审查工作流**
+```bash
+# 开发者完成功能后推送分支
+git push origin feature/goal-management
+
+# 创建Pull Request进行代码审查
+# 审查者可以checkout到该分支本地测试
+git fetch origin
+git checkout feature/goal-management
+
+# 如果需要修改，开发者继续在分支上提交
+git add .
+git commit -m "fix: 根据代码审查建议修复问题"
+git push origin feature/goal-management
+
+# 审查通过后合并
+git checkout main
+git merge feature/goal-management
+```
+
+**场景4: 处理长期开发分支**
+```bash
+# 对于需要长期开发的大功能，定期同步主分支
+git checkout feature/major-refactor
+git merge main  # 或使用 rebase: git rebase main
+
+# 解决可能的冲突后继续开发
+# 这样可以避免最终合并时的大量冲突
+```
+
+**场景5: 应急响应流程**
+```bash
+# 生产环境发现严重bug，需要紧急修复
+git checkout main
+git pull origin main
+git checkout -b hotfix/critical-security-fix
+
+# 快速修复
+git add src/security/auth.js
+git commit -m "fix: 修复关键安全漏洞"
+
+# 立即部署到生产环境
+git checkout main
+git merge hotfix/critical-security-fix
+git push origin main
+
+# 部署完成后，将修复同步到所有活跃的开发分支
+git checkout develop
+git merge hotfix/critical-security-fix
+
+git checkout feature/user-management
+git merge main  # 确保功能分支也包含这个修复
+```
+
+**场景6: 特性开关(Feature Flag)结合分支**
+```bash
+# 开发可能需要回滚的新功能
+git checkout -b feature/experimental-ui
+
+# 在代码中使用特性开关
+if (featureFlags.newUI) {
+  // 新UI代码
+} else {
+  // 原有UI代码
+}
+
+# 先合并代码但关闭特性开关
+git checkout main
+git merge feature/experimental-ui
+
+# 在生产环境逐步开启，如果有问题可以快速关闭
+# 无需重新部署代码
+```
+
+#### 3. 撤销操作 - 重要功能详解
 
 Git提供了多种撤销操作，以下是详细说明和实际应用场景：
 
-##### 2.1 软重置 (git reset --soft)
+##### 3.1 软重置 (git reset --soft)
 **用途**: 撤销提交但保留所有更改在暂存区
 ```bash
 git reset --soft HEAD~1
@@ -167,7 +627,7 @@ git reset --soft HEAD~1
 - 文件修改保留在暂存区(staged)
 - 工作目录不受影响
 
-##### 2.2 混合重置 (git reset --mixed) - 默认模式
+##### 3.2 混合重置 (git reset --mixed) - 默认模式
 **用途**: 撤销提交和暂存，但保留工作目录的更改
 ```bash
 git reset HEAD~1
@@ -180,7 +640,7 @@ git reset --mixed HEAD~1
 - 暂存区被清空
 - 文件修改保留在工作目录(unstaged)
 
-##### 2.3 硬重置 (git reset --hard) - ⚠️ 危险操作
+##### 3.3 硬重置 (git reset --hard) - ⚠️ 危险操作
 **用途**: 完全撤销提交和所有更改
 ```bash
 git reset --hard HEAD~1
@@ -192,7 +652,7 @@ git reset --hard HEAD~1
 - 工作目录的更改被删除
 - **⚠️ 注意**: 未提交的更改将永久丢失
 
-##### 2.4 反向提交 (git revert) - 推荐方式
+##### 3.4 反向提交 (git revert) - 推荐方式
 **用途**: 创建一个新的提交来撤销之前的提交
 ```bash
 git revert HEAD
@@ -204,7 +664,7 @@ git revert <commit-hash>
 - 创建新的"反向"提交
 - 适合团队协作环境
 
-##### 2.5 撤销操作选择指南
+##### 3.5 撤销操作选择指南
 
 | 情况 | 推荐操作 | 原因 |
 |------|----------|------|
@@ -214,7 +674,7 @@ git revert <commit-hash>
 | 共享分支撤销 | `git revert HEAD` | 安全，保持历史 |
 | 撤销工作目录更改 | `git checkout -- <file>` | 恢复单个文件 |
 
-#### 3. 实际操作示例
+#### 4. 实际操作示例
 
 以下是在本项目中的实际Git操作演示：
 
