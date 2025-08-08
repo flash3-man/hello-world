@@ -427,7 +427,7 @@ export default {
       // 快速功能列表
       allFunctionsList: [
         { id: 1, name: '员工月报', icon: '👥', route: 'employee-report', selected: true },
-        { id: 2, name: '综合月报', icon: '📊', route: 'employee-performance', selected: true },
+        { id: 2, name: '业绩变化分析', icon: '📊', route: 'performance-analysis', selected: true },
         { id: 3, name: '电视大屏', icon: '📺', route: 'employee-performance', selected: true },
         { id: 4, name: '目标管理', icon: '🎯', route: 'goal-management', selected: true },
         { id: 5, name: '员工动态', icon: '💼', route: 'employee-performance', selected: true },
