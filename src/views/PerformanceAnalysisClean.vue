@@ -2,11 +2,6 @@
   <div class="performance-analysis">
     <!-- 标题栏 -->
     <div class="title-bar">
-      <button class="back-btn" @click="goBack">
-        <svg class="back-icon" width="20" height="20" viewBox="0 0 20 20">
-          <path d="M12 16L6 10L12 4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
       <h1 class="page-title">业绩变化分析</h1>
       <button class="export-btn" @click="exportData">
         <svg class="export-icon" width="16" height="16" viewBox="0 0 16 16">
@@ -63,36 +58,11 @@
     <div class="data-display-section">
       <!-- 数据表头 -->
       <div class="data-header">
-        <div class="header-cell name-col sortable" @click="sortData('name')">
-          {{ selectedDimensionText.replace('按', '').replace('分析', '') }}
-          <svg v-if="sortField === 'name'" class="sort-icon" :class="{ 'desc': sortOrder === 'desc' }" width="12" height="12" viewBox="0 0 12 12">
-            <path d="M6 2L10 8H2L6 2Z"/>
-          </svg>
-        </div>
-        <div class="header-cell sortable" @click="sortData('currentValue')">
-          {{ selectedMetricText }}(统计期)
-          <svg v-if="sortField === 'currentValue'" class="sort-icon" :class="{ 'desc': sortOrder === 'desc' }" width="12" height="12" viewBox="0 0 12 12">
-            <path d="M6 2L10 8H2L6 2Z"/>
-          </svg>
-        </div>
-        <div class="header-cell sortable" @click="sortData('compareValue')">
-          {{ selectedMetricText }}(对比期)
-          <svg v-if="sortField === 'compareValue'" class="sort-icon" :class="{ 'desc': sortOrder === 'desc' }" width="12" height="12" viewBox="0 0 12 12">
-            <path d="M6 2L10 8H2L6 2Z"/>
-          </svg>
-        </div>
-        <div class="header-cell sortable" @click="sortData('changeValue')">
-          变化值
-          <svg v-if="sortField === 'changeValue'" class="sort-icon" :class="{ 'desc': sortOrder === 'desc' }" width="12" height="12" viewBox="0 0 12 12">
-            <path d="M6 2L10 8H2L6 2Z"/>
-          </svg>
-        </div>
-        <div class="header-cell sortable" @click="sortData('changeRate')">
-          变化率
-          <svg v-if="sortField === 'changeRate'" class="sort-icon" :class="{ 'desc': sortOrder === 'desc' }" width="12" height="12" viewBox="0 0 12 12">
-            <path d="M6 2L10 8H2L6 2Z"/>
-          </svg>
-        </div>
+        <div class="header-cell name-col">{{ selectedDimensionText.replace('按', '').replace('分析', '') }}</div>
+        <div class="header-cell">{{ selectedMetricText }}(统计期)</div>
+        <div class="header-cell">{{ selectedMetricText }}(对比期)</div>
+        <div class="header-cell">变化值</div>
+        <div class="header-cell">变化率</div>
       </div>
       
       <!-- 数据内容 -->
@@ -126,102 +96,6 @@
         <button class="related-btn" @click="viewRelatedData">
           查看{{ selectedDimensionText.replace('按', '').replace('分析', '') }}关联数据
         </button>
-      </div>
-    </div>
-
-    <!-- 筛选条件配置区 -->
-    <div v-if="showFilterConfig" class="filter-config-section">
-      <div class="filter-header">
-        <h3 class="filter-title">筛选条件配置</h3>
-        <button class="filter-close" @click="hideFilterConfig">×</button>
-      </div>
-      
-      <div class="filter-content">
-        <!-- 基础筛选 -->
-        <div class="filter-group">
-          <div class="filter-group-title">基础筛选</div>
-          <div class="filter-items">
-            <div class="filter-item" v-for="filter in basicFilters" :key="filter.key" @click="openFilterModal(filter.key)">
-              <span class="filter-label">{{ filter.label }}</span>
-              <span class="filter-value">{{ getFilterDisplayValue(filter.key) }}</span>
-              <svg class="filter-arrow" width="12" height="8" viewBox="0 0 12 8">
-                <path d="M1 1L6 6L11 1"/>
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        <!-- 高级筛选 -->
-        <div class="filter-group">
-          <div class="filter-group-title">高级筛选</div>
-          <div class="filter-items">
-            <div class="filter-item" v-for="filter in advancedFilters" :key="filter.key" @click="openFilterModal(filter.key)">
-              <span class="filter-label">{{ filter.label }}</span>
-              <span class="filter-value">{{ getFilterDisplayValue(filter.key) }}</span>
-              <svg class="filter-arrow" width="12" height="8" viewBox="0 0 12 8">
-                <path d="M1 1L6 6L11 1"/>
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        <!-- 筛选操作 -->
-        <div class="filter-actions">
-          <button class="filter-reset-btn" @click="resetAllFilters">重置筛选</button>
-          <button class="filter-apply-btn" @click="applyFilters">应用筛选</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 穿透分析结果区 -->
-    <div v-if="showDrilldownResults" class="drilldown-results-section">
-      <div class="drilldown-header">
-        <h3 class="drilldown-title">{{ drilldownTitle }}</h3>
-        <button class="drilldown-close" @click="hideDrilldownResults">×</button>
-      </div>
-      
-      <div class="drilldown-content">
-        <!-- 穿透数据表头 -->
-        <div class="drilldown-data-header">
-          <div class="drilldown-header-cell name-col">{{ drilldownDimension }}</div>
-          <div class="drilldown-header-cell">{{ selectedMetricText }}(统计期)</div>
-          <div class="drilldown-header-cell">{{ selectedMetricText }}(对比期)</div>
-          <div class="drilldown-header-cell">变化值</div>
-          <div class="drilldown-header-cell">变化率</div>
-        </div>
-        
-        <!-- 穿透数据内容 -->
-        <div class="drilldown-data-body">
-          <div 
-            v-for="(item, index) in drilldownData" 
-            :key="index"
-            class="drilldown-data-row"
-            :class="{ 'even-row': index % 2 === 1 }"
-            @click="viewDrilldownDetail(item)"
-          >
-            <div class="drilldown-data-cell name-col">{{ item.name }}</div>
-            <div class="drilldown-data-cell metric-col">{{ formatMetricValue(item.currentValue) }}</div>
-            <div class="drilldown-data-cell metric-col">{{ formatMetricValue(item.compareValue) }}</div>
-            <div class="drilldown-data-cell" :class="getChangeClass(item.changeValue)">
-              {{ formatChangeValue(item.changeValue) }}
-            </div>
-            <div class="drilldown-data-cell" :class="getChangeClass(item.changeRate)">
-              {{ formatChangeRate(item.changeRate) }}
-            </div>
-          </div>
-        </div>
-
-        <!-- 穿透操作按钮 -->
-        <div class="drilldown-actions">
-          <button 
-            v-for="action in currentDrilldownActions" 
-            :key="action.key"
-            class="drilldown-action-btn"
-            @click="executeDrilldownAction(action.key)"
-          >
-            {{ action.label }}
-          </button>
-        </div>
       </div>
     </div>
 
@@ -385,37 +259,6 @@
         </div>
       </div>
     </div>
-    <!-- 筛选器弹窗 -->
-    <div v-if="showFilterModal" class="filter-modal-overlay" @click="hideFilterModal">
-      <div class="filter-modal-content" @click.stop>
-        <div class="filter-modal-header">
-          <h3 class="filter-modal-title">{{ currentFilterTitle }}</h3>
-          <button class="filter-modal-close" @click="hideFilterModal">×</button>
-        </div>
-        <div class="filter-modal-body">
-          <div class="filter-search">
-            <input v-model="filterSearchQuery" placeholder="搜索..." class="filter-search-input" />
-          </div>
-          <div class="filter-options-list">
-            <div 
-              v-for="option in currentFilterOptions" 
-              :key="option.value"
-              :class="['filter-option-item', { selected: option.selected }]"
-              @click="toggleFilterOption(option)"
-            >
-              <span class="option-label">{{ option.label }}</span>
-              <svg v-if="option.selected" class="option-check" width="16" height="16" viewBox="0 0 16 16">
-                <path d="M13.5 3L6 10.5L2.5 7"/>
-              </svg>
-            </div>
-          </div>
-        </div>
-        <div class="filter-modal-footer">
-          <button class="filter-cancel-btn" @click="hideFilterModal">取消</button>
-          <button class="filter-confirm-btn" @click="confirmFilterSelection">确定</button>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -431,17 +274,10 @@ export default {
       selectedDimension: 'region',
       selectedBusinessCategory: 'all',
       
-      // 排序状态
-      sortField: '',
-      sortOrder: 'asc', // 'asc' 升序, 'desc' 降序
-      
       // 弹窗状态
       showDatePicker: false,
       showMetricSelector: false,
       showDimensionSelector: false,
-      showFilterConfig: false,
-      showDrilldownResults: false,
-      showFilterModal: false,
       currentDatePickerType: '', // 'current' 或 'compare'
       
       // 日期选择相关
@@ -593,137 +429,11 @@ export default {
           changeRate: 0,
           category: 'stable'
         }
-      ],
-
-      // 筛选配置
-      basicFilters: [
-        { key: 'customer', label: '客户' },
-        { key: 'region', label: '片区' },
-        { key: 'channel', label: '渠道' },
-        { key: 'brand', label: '品牌' }
-      ],
-      
-      advancedFilters: [
-        { key: 'product', label: '商品' },
-        { key: 'employee', label: '员工' },
-        { key: 'category', label: '分类' },
-        { key: 'department', label: '部门' }
-      ],
-      
-      // 筛选数据
-      filterData: {
-        customer: [
-          { value: 'customer1', label: '大客户A', selected: false },
-          { value: 'customer2', label: '中型客户B', selected: false },
-          { value: 'customer3', label: '小客户C', selected: false },
-          { value: 'customer4', label: '新客户D', selected: false },
-          { value: 'customer5', label: '重点客户E', selected: false }
-        ],
-        region: [
-          { value: 'region1', label: '华东区', selected: false },
-          { value: 'region2', label: '华南区', selected: false },
-          { value: 'region3', label: '华北区', selected: false },
-          { value: 'region4', label: '西南区', selected: false },
-          { value: 'region5', label: '东北区', selected: false }
-        ],
-        channel: [
-          { value: 'channel1', label: '线上渠道', selected: false },
-          { value: 'channel2', label: '门店渠道', selected: false },
-          { value: 'channel3', label: '代理渠道', selected: false },
-          { value: 'channel4', label: '直销渠道', selected: false },
-          { value: 'channel5', label: '电商渠道', selected: false }
-        ],
-        brand: [
-          { value: 'brand1', label: '品牌A', selected: false },
-          { value: 'brand2', label: '品牌B', selected: false },
-          { value: 'brand3', label: '品牌C', selected: false },
-          { value: 'brand4', label: '品牌D', selected: false },
-          { value: 'brand5', label: '品牌E', selected: false }
-        ],
-        product: [
-          { value: 'product1', label: '产品系列A', selected: false },
-          { value: 'product2', label: '产品系列B', selected: false },
-          { value: 'product3', label: '产品系列C', selected: false },
-          { value: 'product4', label: '产品系列D', selected: false },
-          { value: 'product5', label: '产品系列E', selected: false }
-        ],
-        employee: [
-          { value: 'employee1', label: '张经理', selected: false },
-          { value: 'employee2', label: '李主管', selected: false },
-          { value: 'employee3', label: '王专员', selected: false },
-          { value: 'employee4', label: '赵顾问', selected: false },
-          { value: 'employee5', label: '陈总监', selected: false }
-        ],
-        category: [
-          { value: 'category1', label: '电子产品', selected: false },
-          { value: 'category2', label: '服装鞋帽', selected: false },
-          { value: 'category3', label: '家居用品', selected: false },
-          { value: 'category4', label: '食品饮料', selected: false },
-          { value: 'category5', label: '图书文具', selected: false }
-        ],
-        department: [
-          { value: 'department1', label: '销售部', selected: false },
-          { value: 'department2', label: '市场部', selected: false },
-          { value: 'department3', label: '运营部', selected: false },
-          { value: 'department4', label: '客服部', selected: false },
-          { value: 'department5', label: '技术部', selected: false }
-        ]
-      },
-      
-      // 筛选器状态
-      currentFilterKey: '',
-      currentFilterTitle: '',
-      filterSearchQuery: '',
-      
-      // 穿透分析相关
-      drilldownTitle: '',
-      drilldownDimension: '',
-      drilldownData: [],
-      currentDrilldownActions: [],
-      
-      // 穿透操作配置
-      drilldownActionsMap: {
-        'customer': [
-          { key: 'view-brands', label: '查看品牌' },
-          { key: 'view-products', label: '查看商品' },
-          { key: 'view-orders', label: '查看订单' }
-        ],
-        'region': [
-          { key: 'view-customers', label: '查看客户' },
-          { key: 'view-employees', label: '查看员工' }
-        ],
-        'channel': [
-          { key: 'view-customers', label: '查看客户' },
-          { key: 'view-orders', label: '查看订单' }
-        ],
-        'brand': [
-          { key: 'view-products', label: '查看商品' },
-          { key: 'view-opportunities', label: '查看销售机会' },
-          { key: 'view-customers', label: '查看客户' }
-        ],
-        'product': [
-          { key: 'view-opportunities', label: '查看销售机会' },
-          { key: 'view-inventory', label: '查看库存' }
-        ],
-        'employee': [
-          { key: 'view-customers', label: '查看客户' },
-          { key: 'view-brands', label: '查看品牌' },
-          { key: 'view-products', label: '查看商品' },
-          { key: 'view-performance', label: '查看绩效' }
-        ],
-        'category': [
-          { key: 'view-products', label: '查看商品' },
-          { key: 'view-brands', label: '查看品牌' }
-        ],
-        'department': [
-          { key: 'view-employees', label: '查看员工' },
-          { key: 'view-performance', label: '查看绩效' }
-        ]
-      }
+      ]
     }
   },
   
-    computed: {
+  computed: {
     // 计算当前标题
     datePickerTitle() {
       return this.currentDatePickerType === 'current' ? '选择统计时间' : '选择对比时间'
@@ -743,33 +453,10 @@ export default {
     
     // 过滤后的分析数据
     filteredAnalysisData() {
-      let data = this.selectedBusinessCategory === 'all' 
-        ? this.analysisData 
-        : this.analysisData.filter(item => item.category === this.selectedBusinessCategory)
-      
-      // 应用排序
-      if (this.sortField) {
-        data = [...data].sort((a, b) => {
-          let aValue = a[this.sortField]
-          let bValue = b[this.sortField]
-          
-          // 处理名称字段的排序
-          if (this.sortField === 'name') {
-            return this.sortOrder === 'asc' 
-              ? aValue.localeCompare(bValue, 'zh-CN')
-              : bValue.localeCompare(aValue, 'zh-CN')
-          }
-          
-          // 处理数字字段的排序
-          if (this.sortOrder === 'asc') {
-            return aValue - bValue
-          } else {
-            return bValue - aValue
-          }
-        })
+      if (this.selectedBusinessCategory === 'all') {
+        return this.analysisData
       }
-      
-      return data
+      return this.analysisData.filter(item => item.category === this.selectedBusinessCategory)
     },
     
     // 计算业务分类的数量
@@ -803,27 +490,10 @@ export default {
         return this.totalCurrentValue > 0 ? 100 : 0
       }
       return ((this.totalCurrentValue - this.totalCompareValue) / this.totalCompareValue) * 100
-    },
-
-    // 当前筛选器选项
-    currentFilterOptions() {
-      if (!this.currentFilterKey) return []
-      
-      const options = this.filterData[this.currentFilterKey] || []
-      if (!this.filterSearchQuery) return options
-      
-      return options.filter(option => 
-        option.label.toLowerCase().includes(this.filterSearchQuery.toLowerCase())
-      )
     }
   },
   
   methods: {
-    // 返回上一页
-    goBack() {
-      this.$router.go(-1)
-    },
-    
     // 导出数据
     exportData() {
       const data = this.filteredAnalysisData.map(item => ({
@@ -974,153 +644,23 @@ export default {
     
     // 查看关联数据
     viewRelatedData() {
-      // 显示筛选配置界面
-      this.showFilterConfig = true
-      this.currentDrilldownActions = this.drilldownActionsMap[this.selectedDimension] || []
-    },
-    
-    // 查看单项详情
-    viewItemDetail(item) {
-      // 触发穿透分析
-      this.executeDrilldown(item)
-    },
-
-    // === 筛选配置相关方法 ===
-    hideFilterConfig() {
-      this.showFilterConfig = false
-    },
-
-    openFilterModal(filterKey) {
-      this.currentFilterKey = filterKey
-      this.currentFilterTitle = this.basicFilters.find(f => f.key === filterKey)?.label || 
-                               this.advancedFilters.find(f => f.key === filterKey)?.label || ''
-      this.showFilterModal = true
-      this.filterSearchQuery = ''
-    },
-
-    hideFilterModal() {
-      this.showFilterModal = false
-      this.currentFilterKey = ''
-      this.filterSearchQuery = ''
-    },
-
-    toggleFilterOption(option) {
-      option.selected = !option.selected
-    },
-
-    confirmFilterSelection() {
-      this.hideFilterModal()
-      // 这里可以添加筛选逻辑
-      console.log('筛选条件已更新:', this.currentFilterKey)
-    },
-
-    getFilterDisplayValue(filterKey) {
-      const selectedOptions = this.filterData[filterKey]?.filter(option => option.selected) || []
-      if (selectedOptions.length === 0) return '全部'
-      if (selectedOptions.length === 1) return selectedOptions[0].label
-      return `已选${selectedOptions.length}项`
-    },
-
-    resetAllFilters() {
-      // 重置所有筛选条件
-      Object.keys(this.filterData).forEach(key => {
-        this.filterData[key].forEach(option => {
-          option.selected = false
-        })
-      })
-      console.log('所有筛选条件已重置')
-    },
-
-    applyFilters() {
-      // 应用筛选条件
-      this.hideFilterConfig()
-      this.refreshAnalysisData()
-      console.log('筛选条件已应用')
-    },
-
-    // === 穿透分析相关方法 ===
-    executeDrilldown(item) {
-      // 根据当前维度执行对应的穿透分析
       const dimensionMap = {
         'customer': '客户',
-        'region': '片区', 
+        'region': '片区',
         'channel': '渠道',
         'brand': '品牌',
         'product': '商品',
         'employee': '员工',
-        'category': '分类',
-        'department': '部门'
+        'category': '分类'
       }
       
-      this.drilldownTitle = `${item.name} - 穿透分析`
-      this.drilldownDimension = dimensionMap[this.selectedDimension] || '项目'
-      this.currentDrilldownActions = this.drilldownActionsMap[this.selectedDimension] || []
-      
-      // 生成穿透数据
-      this.generateDrilldownData()
-      this.showDrilldownResults = true
+      const dimensionName = dimensionMap[this.selectedDimension] || '数据'
+      alert(`即将跳转到${dimensionName}详细分析页面`)
     },
-
-    hideDrilldownResults() {
-      this.showDrilldownResults = false
-      this.drilldownData = []
-    },
-
-    generateDrilldownData() {
-      // 根据维度生成不同的穿透数据
-      const drilldownDataMap = {
-        'customer': ['品牌A', '品牌B', '品牌C', '商品X', '商品Y'],
-        'region': ['客户1', '客户2', '客户3', '员工A', '员工B'], 
-        'channel': ['订单001', '订单002', '客户甲', '客户乙'],
-        'brand': ['商品1', '商品2', '机会A', '机会B'],
-        'product': ['机会1', '机会2', '库存A', '库存B'],
-        'employee': ['客户X', '客户Y', '品牌M', '商品N'],
-        'category': ['产品1', '产品2', '品牌P', '品牌Q'],
-        'department': ['员工1', '员工2', '绩效A', '绩效B']
-      }
-      
-      const names = drilldownDataMap[this.selectedDimension] || ['项目1', '项目2', '项目3']
-      
-      this.drilldownData = names.map((name, index) => {
-        const baseValue = Math.random() * 10000 + 1000
-        const compareValue = Math.random() * 10000 + 1000
-        const changeValue = baseValue - compareValue
-        const changeRate = compareValue === 0 ? 
-          (baseValue > 0 ? 100 : 0) : 
-          (changeValue / compareValue) * 100
-        
-        return {
-          id: index + 1,
-          name,
-          currentValue: baseValue,
-          compareValue,
-          changeValue,
-          changeRate
-        }
-      })
-    },
-
-    viewDrilldownDetail(item) {
-      alert(`查看${item.name}的详细信息`)
-    },
-
-    executeDrilldownAction(actionKey) {
-      const actionMap = {
-        'view-brands': '品牌分析',
-        'view-products': '商品分析', 
-        'view-orders': '订单明细',
-        'view-customers': '客户分析',
-        'view-employees': '员工分析',
-        'view-opportunities': '销售机会',
-        'view-inventory': '库存分析',
-        'view-performance': '绩效分析'
-      }
-      
-      const actionName = actionMap[actionKey] || '详细分析'
-      alert(`即将跳转到${actionName}页面`)
-      
-      // 这里可以实现实际的页面跳转
-      // this.$router.push(`/${actionKey}`)
+    
+    // 查看单项详情
+    viewItemDetail(item) {
+      alert(`查看${item.name}的详细数据分析`)
     },
     
     // 刷新分析数据
@@ -1180,22 +720,6 @@ export default {
           category
         }
       })
-      
-      // 重置排序状态
-      this.sortField = ''
-      this.sortOrder = 'asc'
-    },
-    
-    // 排序数据
-    sortData(field) {
-      if (this.sortField === field) {
-        // 如果点击的是当前排序字段，切换排序方向
-        this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc'
-      } else {
-        // 如果点击的是新字段，设置为升序
-        this.sortField = field
-        this.sortOrder = 'asc'
-      }
     }
   },
   
@@ -1227,31 +751,6 @@ export default {
   z-index: 100;
 }
 
-.back-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  color: #333333;
-  cursor: pointer;
-  padding: 6px;
-  border-radius: 4px;
-  transition: background-color 0.2s;
-  min-width: 32px;
-  height: 32px;
-}
-
-.back-btn:hover {
-  background-color: #f0f0f0;
-}
-
-.back-icon {
-  width: 20px;
-  height: 20px;
-  color: #333333;
-}
-
 .page-title {
   color: #333333;
   font-size: 18px;
@@ -1259,9 +758,6 @@ export default {
   margin: 0;
   flex: 1;
   text-align: center;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
 }
 
 .export-btn {
@@ -1406,40 +902,10 @@ export default {
   font-size: 15px;
   font-weight: 600;
   text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
 }
 
 .header-cell.name-col {
   text-align: left;
-  justify-content: flex-start;
-}
-
-/* 可排序的表头样式 */
-.header-cell.sortable {
-  cursor: pointer;
-  user-select: none;
-  transition: background-color 0.2s;
-  padding: 4px 8px;
-  border-radius: 4px;
-  gap: 4px;
-}
-
-.header-cell.sortable:hover {
-  background-color: #f0f8ff;
-}
-
-/* 排序图标 */
-.sort-icon {
-  fill: #007AFF;
-  transition: transform 0.2s;
-  margin-left: 4px;
-}
-
-.sort-icon.desc {
-  transform: rotate(180deg);
 }
 
 /* 数据行 */
