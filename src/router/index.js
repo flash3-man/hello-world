@@ -4,6 +4,7 @@ import EmployeePerformance from '@/views/EmployeePerformance.vue'
 import PerformanceAnalysis from '@/views/PerformanceAnalysis.vue'
 import GoalManagement from '@/views/GoalManagement.vue'
 import EmployeeReport from '@/views/EmployeeReport.vue'
+import MonthlyReport from '@/views/MonthlyReport.vue'
 
 const routes = [
   {
@@ -30,6 +31,11 @@ const routes = [
     path: '/employee-report',
     name: 'EmployeeReport',
     component: EmployeeReport
+  },
+  {
+    path: '/monthly-report',
+    name: 'MonthlyReport',
+    component: MonthlyReport
   }
 ]
 
