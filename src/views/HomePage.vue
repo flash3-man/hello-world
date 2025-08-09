@@ -115,6 +115,15 @@
           <div class="data-supplement">今日：232.00元</div>
         </div>
       </div>
+
+      <!-- 第五行：铺市分析快速入口 -->
+      <div class="summary-row market-row">
+        <div class="summary-card market-analysis" @click="navigateToMarketAnalysis">
+          <div class="market-icon">🏪</div>
+          <div class="market-label">铺市分析</div>
+          <div class="market-desc">查看员工、客户、商品铺货情况</div>
+        </div>
+      </div>
     </div>
 
     <!-- 数据详情弹窗 -->
@@ -741,6 +750,11 @@ export default {
     getProgressWidth(completionRate) {
       const rate = parseFloat(completionRate.replace('%', ''))
       return Math.min(rate, 100) + '%'
+    },
+    
+    // 导航到铺市分析
+    navigateToMarketAnalysis() {
+      this.$router.push('/market-analysis')
     },
     
     loadFunctionConfig() {
@@ -1663,6 +1677,58 @@ export default {
   font-weight: bold;
 }
 
+/* 铺市分析卡片样式 */
+.market-analysis {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.market-analysis:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+}
+
+.market-analysis::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+  transform: rotate(45deg);
+  pointer-events: none;
+}
+
+.market-icon {
+  font-size: 32px;
+  margin-bottom: 12px;
+  display: block;
+  opacity: 0.9;
+}
+
+.market-label {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 8px;
+  color: white;
+}
+
+.market-desc {
+  font-size: 14px;
+  opacity: 0.9;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.9);
+}
+
 /* 响应式设计 */
 @media (max-width: 480px) {
   .summary-row {
@@ -1680,6 +1746,23 @@ export default {
   
   .goal-action-bar {
     flex-direction: column;
+  }
+  
+  .market-analysis {
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+  
+  .market-icon {
+    font-size: 28px;
+  }
+  
+  .market-label {
+    font-size: 16px;
+  }
+  
+  .market-desc {
+    font-size: 13px;
   }
 }
 </style>
