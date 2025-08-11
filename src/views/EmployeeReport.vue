@@ -357,6 +357,11 @@ export default {
   },
   
   methods: {
+    // 返回上一页
+    goBack() {
+      this.$router.go(-1)
+    },
+    
     // 导出数据
     exportData() {
       // 实现数据导出逻辑
@@ -483,11 +488,6 @@ export default {
         filters: this.selectedFilters
       })
       // 这里可以调用API获取最新数据
-    },
-    
-    // 页面返回
-    goBack() {
-      this.$router.go(-1)
     }
   },
   

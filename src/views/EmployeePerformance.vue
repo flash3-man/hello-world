@@ -3,11 +3,19 @@
     <!-- 顶部操作区 -->
     <div class="header-section">
       <div class="header-actions">
-        <button class="export-btn" @click="exportData">导出</button>
-        <h1 class="page-title">员工业绩汇总表</h1>
-        <button class="filter-btn" @click="toggleFilter">
-          筛选 ▽
+        <button class="back-btn" @click="goBack">
+          <svg class="back-icon" width="20" height="20" viewBox="0 0 20 20">
+            <path d="M12 16L6 10L12 4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          返回
         </button>
+        <h1 class="page-title">员工业绩汇总表</h1>
+        <div class="header-right">
+          <button class="export-btn" @click="exportData">导出</button>
+          <button class="filter-btn" @click="toggleFilter">
+            筛选 ▽
+          </button>
+        </div>
       </div>
       <div class="date-range">
         <span class="date-text">{{ currentDateRange }}</span>
@@ -199,6 +207,9 @@ export default {
     }
   },
   methods: {
+    goBack() {
+      this.$router.go(-1)
+    },
     toggleFilter() {
       this.showFilter = !this.showFilter
     },
@@ -235,9 +246,6 @@ export default {
     viewEmployeeDetail(employeeId) {
       console.log('查看员工详情:', employeeId)
       // 这里可以跳转到员工详情页
-    },
-    goBack() {
-      this.$router.go(-1)
     }
   }
 }
@@ -261,6 +269,38 @@ export default {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 8px;
+  position: relative;
+}
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: #1677ff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.back-btn:hover {
+  background-color: rgba(22, 119, 255, 0.1);
+}
+
+.back-icon {
+  width: 20px;
+  height: 20px;
+  color: #1677ff;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
 .export-btn {
@@ -277,6 +317,9 @@ export default {
   font-size: 18px;
   font-weight: bold;
   margin: 0;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .filter-btn {
