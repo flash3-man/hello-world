@@ -2,7 +2,14 @@
   <div class="employee-report">
     <!-- 标题栏 (Top Bar) -->
     <div class="top-bar">
-      <h1 class="page-title">员工业绩汇总表</h1>
+      <div class="header-left">
+        <button class="back-btn" @click="goBack">
+          <svg class="back-icon" width="20" height="20" viewBox="0 0 20 20">
+            <path d="M12 16L6 10L12 4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <h1 class="page-title">员工业绩汇总表</h1>
+      </div>
       <button class="export-btn" @click="exportData">
         <svg class="export-icon" width="16" height="16" viewBox="0 0 16 16">
           <path d="M8 10L12 6H9V1H7V6H4L8 10Z"/>
@@ -350,6 +357,11 @@ export default {
   },
   
   methods: {
+    // 返回上一页
+    goBack() {
+      this.$router.go(-1)
+    },
+    
     // 导出数据
     exportData() {
       // 实现数据导出逻辑
@@ -476,11 +488,6 @@ export default {
         filters: this.selectedFilters
       })
       // 这里可以调用API获取最新数据
-    },
-    
-    // 页面返回
-    goBack() {
-      this.$router.go(-1)
     }
   },
   
@@ -523,13 +530,43 @@ export default {
   z-index: 100;
 }
 
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: #007AFF;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  min-width: 32px;
+  height: 32px;
+}
+
+.back-btn:hover {
+  background-color: #f0f8ff;
+}
+
+.back-icon {
+  width: 20px;
+  height: 20px;
+  color: #007AFF;
+}
+
 .page-title {
   color: #333333;
   font-size: 18px;
   font-weight: 600;
   margin: 0;
-  flex: 1;
-  text-align: center;
 }
 
 .export-btn {
