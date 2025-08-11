@@ -8,7 +8,7 @@
             <path d="M12 16L6 10L12 4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </button>
-        <h1 class="page-title">员工业绩汇总表</h1>
+        <h1 class="page-title">员工月报</h1>
       </div>
       <button class="export-btn" @click="exportData">
         <svg class="export-icon" width="16" height="16" viewBox="0 0 16 16">

@@ -9,6 +9,7 @@ import MarketAnalysis from '@/views/MarketAnalysis.vue'
 import EmployeeAnalysis from '@/views/EmployeeAnalysis.vue'
 import CustomerAnalysis from '@/views/CustomerAnalysis.vue'
 import ProductAnalysis from '@/views/ProductAnalysis.vue'
+import CustomerReturn from '@/views/CustomerReturn.vue'
 import TestTable from '@/views/TestTable.vue'
 import TestTableLayout from '@/views/TestTableLayout.vue'
 
@@ -62,6 +63,11 @@ const routes = [
     path: '/product-analysis',
     name: 'ProductAnalysis',
     component: ProductAnalysis
+  },
+  {
+    path: '/customer-return',
+    name: 'CustomerReturn',
+    component: CustomerReturn
   },
   {
     path: '/test-table',

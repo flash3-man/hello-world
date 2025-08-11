@@ -558,7 +558,7 @@ export default {
         { id: 5, name: '我的经营月报', icon: '�', route: 'monthly-report', selected: true },
         { id: 6, name: '铺市分析', icon: '🏪', route: 'market-analysis', selected: true },
         { id: 7, name: '员工业绩汇总', icon: '📈', route: 'employee-performance', selected: true },
-        { id: 8, name: '客户销退汇总', icon: '🔄', route: 'employee-performance', selected: true },
+        { id: 8, name: '客户销退汇总', icon: '🔄', route: 'customer-return', selected: true },
         { id: 9, name: '客户管理', icon: '👤', route: 'customer-management', selected: false },
         { id: 10, name: '库存管理', icon: '📦', route: 'inventory-management', selected: false },
         { id: 11, name: '财务报表', icon: '💰', route: 'financial-reports', selected: false },
