@@ -1,39 +1,92 @@
 <template>
   <div class="home-page">
-    <!-- 一、顶部状态栏（系统级基础信息） -->
-    <div class="system-status-bar">
-      <div class="status-left">
-        <span class="time">15:40</span>
-        <span class="network">5G</span>
-        <div class="alert-notification" @click="showExceptionDetails">
-          <span class="alert-icon">⚠️</span>
-          <span class="alert-text">小盈监控到新的经营异常</span>
+    <!-- 顶部区域：小人Logo + 动态预警 + 搜索 -->
+    <div class="top-navigation-bar">
+      <!-- 左侧：小人Logo（语音播报入口） -->
+      <div class="voice-info-logo" @click="playVoiceInfo">
+        <div class="logo-icon" :class="{ 'has-unread': hasUnreadInfo }">
+          👤
         </div>
+        <div v-if="hasUnreadInfo" class="unread-dot"></div>
       </div>
-      <div class="status-right">
-        <button class="search-btn" @click="showSearchPanel">
-          <span class="search-icon">🔍</span>
-          <span>搜索</span>
-        </button>
-        <span class="battery">27%</span>
-        <span class="battery-icon">🔋</span>
+      
+      <!-- 中间：动态预警提示条 -->
+      <div class="alert-banner" :class="alertPriorityClass" @click="showExceptionDetails">
+        <span class="alert-text">{{ currentAlert.message }}</span>
+      </div>
+      
+      <!-- 右侧：搜索功能 -->
+      <div class="search-container" @click="openSearchModal">
+        <span class="search-placeholder">搜索</span>
+        <div class="search-icon">🔍</div>
       </div>
     </div>
 
-    <!-- 搜索面板 -->
-    <div v-if="showSearch" class="search-overlay" @click="showSearch = false">
-      <div class="search-panel" @click.stop>
-        <div class="search-header">
-          <input 
-            type="text" 
-            v-model="searchKeyword" 
-            placeholder="搜索功能、目标、员工..." 
-            class="search-input"
-            @keyup.enter="performSearch"
-          >
-          <button class="search-close" @click="showSearch = false">✕</button>
+    <!-- 搜索弹窗 -->
+    <div v-if="showSearchModal" class="search-modal-overlay" @click="closeSearchModal">
+      <div class="search-modal" @click.stop>
+        <div class="search-modal-header">
+          <h3>搜索</h3>
+          <button class="close-btn" @click="closeSearchModal">✕</button>
         </div>
-        <div class="search-results" v-if="searchResults.length">
+        <div class="search-modal-content">
+          <div class="search-input-container">
+            <input 
+              ref="searchModalInput"
+              type="text" 
+              v-model="searchKeyword" 
+              placeholder="输入客户名称、订单编号、员工姓名等"
+              class="search-modal-input"
+              @keyup.enter="performSearchInModal"
+            >
+            <button class="search-btn" @click="performSearchInModal">搜索</button>
+          </div>
+          
+          <!-- 搜索结果 -->
+          <div v-if="searchResults.length > 0" class="search-results-section">
+            <div class="results-header">
+              找到 {{ searchResults.length }} 条结果
+            </div>
+            <div class="search-results">
+              <div 
+                v-for="result in searchResults" 
+                :key="result.id"
+                class="search-result-item"
+                @click="handleSearchResult(result)"
+              >
+                <span class="result-type">{{ result.type }}</span>
+                <span class="result-title">{{ result.title }}</span>
+                <span class="result-desc">{{ result.description }}</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 无结果提示 -->
+          <div v-else-if="searchKeyword && hasSearched" class="no-results">
+            <div class="no-results-icon">🔍</div>
+            <div class="no-results-text">未找到相关结果</div>
+            <div class="no-results-tip">请尝试其他关键词</div>
+          </div>
+          
+          <!-- 搜索建议 -->
+          <div v-else class="search-suggestions">
+            <div class="suggestions-title">搜索建议</div>
+            <div class="suggestion-item" @click="searchKeyword = '张三'; performSearchInModal()">客户：张三</div>
+            <div class="suggestion-item" @click="searchKeyword = 'ORD2024'; performSearchInModal()">订单：ORD2024***</div>
+            <div class="suggestion-item" @click="searchKeyword = '黄保杰'; performSearchInModal()">员工：黄保杰</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 搜索结果面板（保留原来的，但不再使用） -->
+    <div v-if="false" class="search-results-overlay">
+      <div class="search-results-panel">
+        <div class="results-header">
+          <span class="results-count">找到 {{ searchResults.length }} 条结果</span>
+          <button class="clear-search" @click="clearSearch">✕</button>
+        </div>
+        <div class="search-results">
           <div 
             v-for="result in searchResults" 
             :key="result.id"
@@ -47,81 +100,81 @@
       </div>
     </div>
 
-    <!-- 二、首页表头汇总区域（经营核心数据看板） -->
-    <div class="data-summary-section">
-      <!-- 第一行：大数字突出 -->
-      <div class="summary-row primary-row">
-        <div class="summary-card major" @click="showDataDetail('current-month-sales')">
-          <div class="data-label">本月销售金额</div>
-          <div class="data-value major-value">38,144.74</div>
-          <div class="data-unit">元</div>
+    <!-- 二、核心数据看板（经营核心数据） -->
+    <div class="data-dashboard-section">
+      <!-- 第一行：主要销售数据对比 -->
+      <div class="main-sales-row">
+        <div class="sales-group">
+          <div class="sales-card primary" @click="showDataDetail('current-month-sales')">
+            <div class="sales-label">本月销售金额</div>
+            <div class="sales-value">38,144.74</div>
+            <div class="sales-unit">元</div>
+          </div>
+          <div class="sales-card secondary" @click="showDataDetail('last-month-sales')">
+            <div class="sales-label">上月</div>
+            <div class="sales-value small">227,356.95</div>
+            <div class="sales-unit">元</div>
+          </div>
         </div>
-        <div class="summary-card major" @click="showDataDetail('today-sales')">
-          <div class="data-label">今日销售金额</div>
-          <div class="data-value major-value">5,580.00</div>
-          <div class="data-unit">元</div>
-        </div>
-      </div>
-
-      <!-- 第二行：辅助数据 -->
-      <div class="summary-row secondary-row">
-        <div class="summary-card minor" @click="showDataDetail('last-month-sales')">
-          <div class="data-label">上月销售金额</div>
-          <div class="data-value">227,356.95</div>
-          <div class="data-unit">元</div>
-        </div>
-        <div class="summary-card minor" @click="showDataDetail('yesterday-sales')">
-          <div class="data-label">昨日销售金额</div>
-          <div class="data-value">3,294.34</div>
-          <div class="data-unit">元</div>
-        </div>
-      </div>
-
-      <!-- 第三行：业务细分数据 -->
-      <div class="summary-row detail-row">
-        <div class="summary-card compact" @click="showDataDetail('net-sales')">
-          <div class="data-label">本月净销售额</div>
-          <div class="data-value">37,188.06</div>
-          <div class="data-unit">元</div>
-        </div>
-        <div class="summary-card compact" @click="showDataDetail('settled-sales')">
-          <div class="data-label">本月销售已结</div>
-          <div class="data-value">17,038.58</div>
-          <div class="data-unit">元</div>
-        </div>
-        <div class="summary-card compact" @click="showDataDetail('return-amount')">
-          <div class="data-label">本月退货金额</div>
-          <div class="data-value">956.68</div>
-          <div class="data-unit">元</div>
-        </div>
-        <div class="summary-card compact" @click="showDataDetail('unsettled-sales')">
-          <div class="data-label">本月销售未结</div>
-          <div class="data-value">20,149.48</div>
-          <div class="data-unit">元</div>
+        
+        <div class="sales-group">
+          <div class="sales-card primary" @click="showDataDetail('today-sales')">
+            <div class="sales-label">今日销售金额</div>
+            <div class="sales-value">5,580.00</div>
+            <div class="sales-unit">元</div>
+          </div>
+          <div class="sales-card secondary" @click="showDataDetail('yesterday-sales')">
+            <div class="sales-label">昨日</div>
+            <div class="sales-value small">3,294.34</div>
+            <div class="sales-unit">元</div>
+          </div>
         </div>
       </div>
 
-      <!-- 第四行：应收/回款数据 -->
-      <div class="summary-row financial-row">
-        <div class="summary-card financial" @click="showDataDetail('receivables')">
-          <div class="data-label">应收余额</div>
-          <div class="data-value">419,596.78</div>
-          <div class="data-unit">元</div>
+      <!-- 第二行：细分数据栏 -->
+      <div class="detail-data-section">
+        <div class="section-header" @click="toggleDetailView">
+          <span class="section-title">经营详情</span>
+          <span class="toggle-icon" :class="{ expanded: showDetailData }">▼</span>
         </div>
-        <div class="summary-card financial" @click="showDataDetail('customer-payment')">
-          <div class="data-label">本月客户回款</div>
-          <div class="data-value">23,258.48</div>
-          <div class="data-unit">元</div>
-          <div class="data-supplement">今日：232.00元</div>
-        </div>
-      </div>
-
-      <!-- 第五行：铺市分析快速入口 -->
-      <div class="summary-row market-row">
-        <div class="summary-card market-analysis" @click="navigateToMarketAnalysis">
-          <div class="market-icon">🏪</div>
-          <div class="market-label">铺市分析</div>
-          <div class="market-desc">查看员工、客户、商品铺货情况</div>
+        
+        <div v-show="showDetailData" class="detail-data-grid">
+          <div class="detail-card" @click="showDataDetail('net-sales')">
+            <div class="detail-label">本月净销售额</div>
+            <div class="detail-value">37,188.06</div>
+            <div class="detail-unit">元</div>
+          </div>
+          
+          <div class="detail-card" @click="showDataDetail('settled-sales')">
+            <div class="detail-label">本月销售已结</div>
+            <div class="detail-value">17,038.58</div>
+            <div class="detail-unit">元</div>
+          </div>
+          
+          <div class="detail-card" @click="showDataDetail('return-amount')">
+            <div class="detail-label">本月退货金额</div>
+            <div class="detail-value negative">956.68</div>
+            <div class="detail-unit">元</div>
+          </div>
+          
+          <div class="detail-card" @click="showDataDetail('unsettled-sales')">
+            <div class="detail-label">本月销售未结</div>
+            <div class="detail-value">20,149.48</div>
+            <div class="detail-unit">元</div>
+          </div>
+          
+          <div class="detail-card" @click="showDataDetail('receivables')">
+            <div class="detail-label">应收余额</div>
+            <div class="detail-value warning">419,596.78</div>
+            <div class="detail-unit">元</div>
+          </div>
+          
+          <div class="detail-card highlight" @click="showDataDetail('customer-payment')">
+            <div class="detail-label">本月客户回款</div>
+            <div class="detail-value">23,258.48</div>
+            <div class="detail-unit">元</div>
+            <div class="detail-supplement">含今日：232.00元</div>
+          </div>
         </div>
       </div>
     </div>
@@ -385,14 +438,77 @@ export default {
       // 当前页面状态
       currentPage: 'home',
       
-      // 搜索相关
-      showSearch: false,
+      // 语音播报相关
+      hasUnreadInfo: true,
+      isSearchActive: false,
+      
+      // 搜索弹窗相关
+      showSearchModal: false,
       searchKeyword: '',
+      hasSearched: false,
+      
+      // 动态预警信息
+      currentAlert: {
+        type: 'business_exception', // 预警类型：business_exception, inventory_warning, payment_abnormal
+        message: '小易监控到新的经营异常',
+        priority: 'high', // high, medium, low
+        details: {
+          category: '经营异常',
+          description: '检测到销售额异常下滑，建议查看客户流失情况',
+          affectedData: ['销售金额', '客户数量'],
+          suggestions: ['分析客户流失原因', '制定挽回策略']
+        }
+      },
+      
+      // 预警信息列表（用于轮播或切换）
+      alertList: [
+        {
+          type: 'business_exception',
+          message: '小易监控到新的经营异常',
+          priority: 'high',
+          details: {
+            category: '经营异常',
+            description: '检测到销售额异常下滑，建议查看客户流失情况'
+          }
+        },
+        {
+          type: 'inventory_warning',
+          message: '库存预警：多个商品库存不足',
+          priority: 'medium',
+          details: {
+            category: '库存预警',
+            description: '15个商品库存低于安全线，建议及时补货'
+          }
+        },
+        {
+          type: 'payment_abnormal',
+          message: '回款异常：逾期回款金额较大',
+          priority: 'high',
+          details: {
+            category: '回款异常',
+            description: '本月逾期回款金额超过10万元，需要跟进客户付款情况'
+          }
+        },
+        {
+          type: 'customer_inactive',
+          message: '重点客户3天未下单',
+          priority: 'medium',
+          details: {
+            category: '客户异常',
+            description: '5个重点客户连续3天未下单，建议主动联系'
+          }
+        }
+      ],
+      
+      // 搜索相关
       searchResults: [],
       
       // 数据详情弹窗
       showDataModal: false,
       currentDataDetail: {},
+      
+      // 数据看板控制
+      showDetailData: false,
       
       // 功能配置相关
       showFunctionConfig: false,
@@ -525,6 +641,11 @@ export default {
     }
   },
   computed: {
+    // 预警优先级样式类
+    alertPriorityClass() {
+      return `alert-${this.currentAlert.priority}`
+    },
+    
     // 显示的功能列表（前8个选中的）
     displayedFunctions() {
       return this.allFunctionsList.filter(func => func.selected).slice(0, 8)
@@ -552,11 +673,173 @@ export default {
     }
   },
   methods: {
-    // === 顶部状态栏相关 ===
+    // === 顶部预警和搜索相关 ===
+    // 语音播报功能
+    playVoiceInfo() {
+      this.hasUnreadInfo = false
+      
+      // 模拟语音播报关键信息
+      const voiceMessages = [
+        '小易提醒：今日退货金额较昨日增长20%',
+        'A部门已完成本月销售目标',
+        '重点客户张三商贸连续3天未下单，建议跟进',
+        '本月净销售额已达成74.38%，继续保持',
+        '库存预警：15个商品低于安全线'
+      ]
+      
+      const randomMessage = voiceMessages[Math.floor(Math.random() * voiceMessages.length)]
+      
+      // 这里可以集成真实的语音播报API
+      if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(randomMessage)
+        utterance.lang = 'zh-CN'
+        utterance.rate = 0.8
+        speechSynthesis.speak(utterance)
+      }
+      
+      // 显示播报内容的提示
+      alert(`🔊 语音播报：${randomMessage}`)
+      
+      console.log('语音播报:', randomMessage)
+    },
+    
     showExceptionDetails() {
-      console.log('显示经营异常详情')
-      // 跳转异常详情页，展示异常类型、涉及数据及预警建议
-      this.$router.push('/exception-details')
+      console.log('显示预警详情:', this.currentAlert)
+      // 根据预警类型跳转不同的详情页
+      switch(this.currentAlert.type) {
+        case 'business_exception':
+          this.$router.push('/business-exception-details')
+          break
+        case 'inventory_warning':
+          this.$router.push('/inventory-warning-details')
+          break
+        case 'payment_abnormal':
+          this.$router.push('/payment-abnormal-details')
+          break
+        case 'customer_inactive':
+          this.$router.push('/customer-inactive-details')
+          break
+        default:
+          this.$router.push('/exception-details')
+      }
+    },
+    
+    // 切换预警信息（可以定时轮播或手动触发）
+    switchAlert(alertIndex) {
+      if (alertIndex >= 0 && alertIndex < this.alertList.length) {
+        this.currentAlert = this.alertList[alertIndex]
+      }
+    },
+    
+    // 定时轮播预警信息
+    startAlertRotation() {
+      if (this.alertList.length > 1) {
+        setInterval(() => {
+          const currentIndex = this.alertList.findIndex(alert => 
+            alert.type === this.currentAlert.type
+          )
+          const nextIndex = (currentIndex + 1) % this.alertList.length
+          this.switchAlert(nextIndex)
+        }, 10000) // 每10秒切换一次
+      }
+    },
+    
+    // === 搜索弹窗相关 ===
+    openSearchModal() {
+      this.showSearchModal = true
+      this.searchKeyword = ''
+      this.hasSearched = false
+      // 延迟一下聚焦，确保DOM已渲染
+      this.$nextTick(() => {
+        if (this.$refs.searchModalInput) {
+          this.$refs.searchModalInput.focus()
+        }
+      })
+    },
+    
+    closeSearchModal() {
+      this.showSearchModal = false
+      this.searchKeyword = ''
+      this.hasSearched = false
+      this.searchResults = []
+    },
+    
+    performSearchInModal() {
+      if (!this.searchKeyword.trim()) {
+        return
+      }
+      
+      this.hasSearched = true
+      
+      // 模拟搜索结果
+      const allData = [
+        // 客户数据
+        { id: 'c1', type: '客户', title: '张三商贸', description: '兰州地区 | A类客户 | 月均订单15单' },
+        { id: 'c2', type: '客户', title: '李四超市', description: '天水地区 | B类客户 | 月均订单8单' },
+        { id: 'c3', type: '客户', title: '王五批发', description: '白银地区 | A类客户 | 月均订单22单' },
+        
+        // 订单数据
+        { id: 'o1', type: '订单', title: 'ORD202412001', description: '张三商贸 | 金额：5,580元 | 今日' },
+        { id: 'o2', type: '订单', title: 'ORD202412002', description: '李四超市 | 金额：3,240元 | 昨日' },
+        { id: 'o3', type: '订单', title: 'ORD202412003', description: '王五批发 | 金额：8,750元 | 前天' },
+        
+        // 员工数据
+        { id: 'e1', type: '员工', title: '黄保杰', description: '销售一部 | 本月销售：185,600元 | 客户铺货率：80%' },
+        { id: 'e2', type: '员工', title: '李明华', description: '销售一部 | 本月销售：203,400元 | 客户铺货率：88.9%' },
+        { id: 'e3', type: '员工', title: '王建国', description: '销售二部 | 本月销售：156,800元 | 客户铺货率：71.4%' }
+      ]
+      
+      // 搜索逻辑
+      const keyword = this.searchKeyword.toLowerCase()
+      this.searchResults = allData.filter(item => 
+        item.title.toLowerCase().includes(keyword) ||
+        item.description.toLowerCase().includes(keyword)
+      )
+      
+      console.log('搜索关键词:', this.searchKeyword)
+      console.log('搜索结果:', this.searchResults)
+    },
+    
+    handleSearchResult(result) {
+      console.log('选择搜索结果:', result)
+      
+      // 根据结果类型跳转到相应页面
+      switch(result.type) {
+        case '客户':
+          this.$router.push(`/customer-details/${result.id}`)
+          break
+        case '订单':
+          this.$router.push(`/order-details/${result.id}`)
+          break
+        case '员工':
+          this.$router.push(`/employee-details/${result.id}`)
+          break
+      }
+      
+      this.closeSearchModal()
+    },
+    
+    // 搜索栏激活
+    activateSearch() {
+      this.isSearchActive = true
+    },
+    
+    // 搜索栏失焦
+    deactivateSearch() {
+      // 延迟失焦，避免点击搜索结果时立即失焦
+      setTimeout(() => {
+        if (!this.searchKeyword) {
+          this.isSearchActive = false
+          this.searchResults = []
+        }
+      }, 200)
+    },
+    
+    // 清空搜索
+    clearSearch() {
+      this.searchKeyword = ''
+      this.searchResults = []
+      this.isSearchActive = false
     },
     
     showSearchPanel() {
@@ -570,27 +853,45 @@ export default {
     performSearch() {
       if (!this.searchKeyword.trim()) return
       
-      // 模拟搜索结果
-      this.searchResults = [
-        { id: 1, type: '功能', title: '员工月报', route: 'employee-report' },
-        { id: 2, type: '目标', title: '销售金额目标', route: 'goal-detail/1' },
-        { id: 3, type: '员工', title: '张三', route: 'employee-detail/1' }
-      ].filter(item => 
+      // 模拟搜索结果 - 包含客户、订单、员工等系统信息
+      const mockResults = [
+        // 功能搜索
+        { id: 1, type: '功能', title: '员工月报', route: 'employee-report', category: 'function' },
+        { id: 2, type: '功能', title: '业绩分析', route: 'performance-analysis', category: 'function' },
+        { id: 3, type: '功能', title: '目标管理', route: 'goal-management', category: 'function' },
+        
+        // 客户搜索
+        { id: 11, type: '客户', title: '张三商贸有限公司', route: 'customer-detail/1', category: 'customer' },
+        { id: 12, type: '客户', title: '李四超市', route: 'customer-detail/2', category: 'customer' },
+        { id: 13, type: '客户', title: '王五批发部', route: 'customer-detail/3', category: 'customer' },
+        
+        // 订单搜索
+        { id: 21, type: '订单', title: 'SO202501001', route: 'order-detail/1', category: 'order' },
+        { id: 22, type: '订单', title: 'SO202501002', route: 'order-detail/2', category: 'order' },
+        
+        // 员工搜索
+        { id: 31, type: '员工', title: '黄保杰', route: 'employee-detail/1', category: 'employee' },
+        { id: 32, type: '员工', title: '李明华', route: 'employee-detail/2', category: 'employee' },
+        { id: 33, type: '员工', title: '王建国', route: 'employee-detail/3', category: 'employee' },
+        
+        // 目标搜索
+        { id: 41, type: '目标', title: '销售金额目标', route: 'goal-detail/1', category: 'goal' },
+        { id: 42, type: '目标', title: '客户回款目标', route: 'goal-detail/3', category: 'goal' }
+      ]
+      
+      this.searchResults = mockResults.filter(item => 
         item.title.toLowerCase().includes(this.searchKeyword.toLowerCase())
       )
-    },
-    
-    handleSearchResult(result) {
-      this.showSearch = false
-      this.searchKeyword = ''
-      this.searchResults = []
-      this.$router.push(`/${result.route}`)
     },
 
     // === 数据汇总区相关 ===
     showDataDetail(dataType) {
       this.currentDataDetail = this.dataDetailMap[dataType] || {}
       this.showDataModal = true
+    },
+    
+    toggleDetailView() {
+      this.showDetailData = !this.showDetailData
     },
     
     viewDetailPage(dataType) {
@@ -777,6 +1078,8 @@ export default {
   },
   mounted() {
     this.loadFunctionConfig()
+    // 启动预警信息轮播
+    this.startAlertRotation()
   }
 }
 </script>
@@ -788,103 +1091,241 @@ export default {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
 }
 
-/* === 一、顶部状态栏（系统级基础信息） === */
-.system-status-bar {
+/* === 顶部区域：小人Logo + 动态预警 + 搜索 === */
+.top-navigation-bar {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  height: 44px;
+  height: 56px;
   background-color: #ffffff;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   padding: 0 16px;
   z-index: 1000;
   border-bottom: 1px solid #e5e5e5;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  gap: 8px; /* 减小间距 */
 }
 
-.status-left {
+/* 左侧：小人Logo（语音播报入口） */
+.voice-info-logo {
+  position: relative;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
-  gap: 16px;
-}
-
-.time {
-  color: #333333;
-  font-weight: 600;
-  font-size: 16px;
-}
-
-.network {
-  color: #333333;
-  font-weight: 500;
-  font-size: 14px;
-}
-
-.alert-notification {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background-color: #fff3e0;
-  padding: 4px 8px;
-  border-radius: 12px;
+  justify-content: center;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
 }
 
-.alert-notification:hover {
-  background-color: #ffe0b2;
+.voice-info-logo:hover {
+  transform: scale(1.1);
 }
 
-.alert-icon {
-  font-size: 14px;
+.logo-icon {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, #1677ff 0%, #0e5fd8 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: white;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(22, 119, 255, 0.3);
+}
+
+.logo-icon.has-unread {
+  animation: pulse 2s infinite;
+  box-shadow: 0 0 15px rgba(22, 119, 255, 0.6);
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 15px rgba(22, 119, 255, 0.6);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(22, 119, 255, 0.8);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 15px rgba(22, 119, 255, 0.6);
+  }
+}
+
+.unread-dot {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 10px;
+  height: 10px;
+  background-color: #ff4d4f;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  animation: bounce 1s infinite;
+}
+
+@keyframes bounce {
+  0%, 20%, 53%, 80%, 100% {
+    transform: translate3d(0,0,0);
+  }
+  40%, 43% {
+    transform: translate3d(0,-8px,0);
+  }
+  70% {
+    transform: translate3d(0,-4px,0);
+  }
+  90% {
+    transform: translate3d(0,-2px,0);
+  }
+}
+
+/* 中间：动态预警提示条 */
+.alert-banner {
+  flex: 1;
+  max-width: calc(100% - 180px); /* 给搜索栏留出更少空间 */
+  border-radius: 20px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.alert-banner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.5s;
+}
+
+.alert-banner:hover::before {
+  left: 100%;
+}
+
+/* 高优先级预警 - 红色 */
+.alert-high {
+  background: linear-gradient(90deg, #ff4d4f 0%, #ff7875 100%);
+  color: white;
+}
+
+.alert-high:hover {
+  background: linear-gradient(90deg, #ff1f22 0%, #ff4d4f 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 77, 79, 0.4);
+}
+
+/* 中优先级预警 - 橙色 */
+.alert-medium {
+  background: linear-gradient(90deg, #ff9900 0%, #ffb84d 100%);
+  color: white;
+}
+
+.alert-medium:hover {
+  background: linear-gradient(90deg, #e6800a 0%, #ff9900 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 153, 0, 0.4);
+}
+
+/* 低优先级预警 - 灰色 */
+.alert-low {
+  background: linear-gradient(90deg, #595959 0%, #8c8c8c 100%);
+  color: white;
+}
+
+.alert-low:hover {
+  background: linear-gradient(90deg, #434343 0%, #595959 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(89, 89, 89, 0.4);
 }
 
 .alert-text {
-  color: #ff7d00;
-  font-weight: bold;
-  font-size: 12px;
+  font-weight: 600;
+  font-size: 13px;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.status-right {
+/* 右侧：搜索功能 */
+.search-container {
   display: flex;
   align-items: center;
-  gap: 12px;
-}
-
-.search-btn {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: none;
+  background-color: #f5f5f5;
   border: 1px solid #e0e0e0;
-  padding: 6px 12px;
-  border-radius: 16px;
-  color: #666666;
-  font-size: 14px;
+  border-radius: 14px; /* 进一步减小圆角 */
+  padding: 4px 8px; /* 进一步减小内边距 */
+  transition: all 0.3s ease;
+  min-width: 80px; /* 大幅减小最小宽度 */
+  max-width: 120px; /* 大幅减小最大宽度 */
+  flex-shrink: 0;
   cursor: pointer;
-  transition: all 0.2s;
 }
 
-.search-btn:hover {
+.search-container.active {
   border-color: #1677ff;
+  background-color: #ffffff;
+  box-shadow: 0 0 10px rgba(22, 119, 255, 0.2);
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 11px; /* 进一步减小字体 */
+  color: #333333;
+  padding: 0 4px 0 0; /* 进一步减小内边距 */
+  width: 40px; /* 设置固定宽度 */
+}
+
+.search-input::placeholder {
+  color: #999999;
+  font-size: 10px; /* 进一步减小占位符字体 */
+}
+
+.search-icon {
+  font-size: 12px; /* 进一步减小图标尺寸 */
+  color: #666666;
+  cursor: pointer;
+  transition: color 0.2s;
+  flex-shrink: 0;
+  padding: 0; /* 移除图标内边距 */
+  width: 16px; /* 设置固定宽度 */
+  height: 16px; /* 设置固定高度 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-placeholder {
+  font-size: 11px;
+  color: #999999;
+  flex: 1;
+}
+
+.search-container.active .search-icon {
   color: #1677ff;
 }
 
-.battery {
-  color: #333333;
-  font-weight: 500;
-  font-size: 14px;
-}
-
-.battery-icon {
-  font-size: 16px;
-}
-
-/* 搜索面板 */
-.search-overlay {
+/* 搜索弹窗样式 */
+.search-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -892,36 +1333,227 @@ export default {
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
 }
 
-.search-panel {
-  position: absolute;
-  top: 60px;
-  left: 16px;
-  right: 16px;
+.search-modal {
   background-color: #ffffff;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 500px;
+  max-height: 80vh;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+}
+
+.search-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #eaeaea;
+  background-color: #f8f9fa;
+}
+
+.search-modal-header h3 {
+  margin: 0;
+  color: #333333;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: #999999;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.close-btn:hover {
+  background-color: #f0f0f0;
+}
+
+.search-modal-content {
+  padding: 20px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.search-input-container {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.search-modal-input {
+  flex: 1;
+  padding: 12px 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.search-modal-input:focus {
+  border-color: #1677ff;
+}
+
+.search-btn {
+  background-color: #1677ff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.search-btn:hover {
+  background-color: #0958d9;
+}
+
+.search-results-section {
+  margin-top: 20px;
+}
+
+.results-header {
+  font-size: 14px;
+  color: #666666;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.search-results {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.search-result-item {
+  padding: 12px 16px;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.search-result-item:hover {
+  border-color: #1677ff;
+  background-color: #f8fbff;
+}
+
+.result-type {
+  font-size: 12px;
+  color: #1677ff;
+  font-weight: 600;
+}
+
+.result-title {
+  font-size: 14px;
+  color: #333333;
+  font-weight: 600;
+}
+
+.result-desc {
+  font-size: 12px;
+  color: #666666;
+}
+
+.no-results {
+  text-align: center;
+  padding: 40px 20px;
+  color: #999999;
+}
+
+.no-results-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.no-results-text {
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.no-results-tip {
+  font-size: 14px;
+}
+
+.search-suggestions {
+  margin-top: 20px;
+}
+
+.suggestions-title {
+  font-size: 14px;
+  color: #333333;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.suggestion-item {
+  padding: 10px 16px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #666666;
+  transition: all 0.2s;
+}
+
+.suggestion-item:hover {
+  background-color: #e9ecef;
+  color: #333333;
+}
+
+/* 搜索结果面板 */
+.search-results-overlay {
+  position: fixed;
+  top: 56px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: 1999;
+}
+
+.search-results-panel {
+  background-color: #ffffff;
+  margin: 8px 16px;
   border-radius: 12px;
   box-shadow: 0 8px 24px rgba(0,0,0,0.15);
   max-height: 400px;
   overflow: hidden;
 }
 
-.search-header {
+.results-header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  padding: 16px;
+  padding: 12px 16px;
   border-bottom: 1px solid #f0f0f0;
+  background-color: #f8f9fa;
 }
 
-.search-input {
-  flex: 1;
-  border: none;
-  outline: none;
-  font-size: 16px;
-  color: #333333;
+.results-count {
+  color: #666666;
+  font-size: 14px;
 }
 
-.search-close {
+.clear-search {
   background: none;
   border: none;
   font-size: 18px;
@@ -949,39 +1581,50 @@ export default {
   background-color: #f8f9fa;
 }
 
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
 .result-type {
   background-color: #e3f2fd;
   color: #1976d2;
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 12px;
+  font-weight: 500;
+  min-width: 40px;
+  text-align: center;
 }
 
 .result-title {
   color: #333333;
   font-size: 14px;
+  font-weight: 500;
 }
 
-/* === 二、首页表头汇总区域（经营核心数据看板） === */
-.data-summary-section {
-  margin-top: 44px; /* 为固定状态栏留空间 */
+/* === 二、核心数据看板（经营核心数据） === */
+.data-dashboard-section {
+  margin-top: 56px; /* 为顶部固定区域留空间 */
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   padding: 24px 16px;
   color: white;
 }
 
-.summary-row {
+/* 主要销售数据对比 */
+.main-sales-row {
   display: flex;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: 16px;
+  margin-bottom: 24px;
 }
 
-.summary-row:last-child {
-  margin-bottom: 0;
-}
-
-.summary-card {
+.sales-group {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sales-card {
   background-color: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(10px);
   border-radius: 12px;
@@ -991,45 +1634,139 @@ export default {
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.summary-card:hover {
+.sales-card:hover {
   background-color: rgba(255, 255, 255, 0.25);
   transform: translateY(-2px);
 }
 
-.summary-card.major {
-  min-height: 80px;
+.sales-card.primary {
+  min-height: 90px;
 }
 
-.summary-card.compact {
+.sales-card.secondary {
   min-height: 60px;
   padding: 12px;
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
-.data-label {
+.sales-label {
   font-size: 12px;
   opacity: 0.9;
   margin-bottom: 8px;
 }
 
-.data-value {
-  font-size: 18px;
+.sales-value {
+  font-size: 28px;
   font-weight: bold;
   margin-bottom: 4px;
+  color: white;
 }
 
-.data-value.major-value {
-  font-size: 24px;
+.sales-value.small {
+  font-size: 18px;
 }
 
-.data-unit {
+.sales-unit {
   font-size: 12px;
   opacity: 0.8;
 }
 
-.data-supplement {
-  font-size: 11px;
+/* 细分数据栏 */
+.detail-data-section {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.section-header:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+}
+
+.toggle-icon {
+  font-size: 14px;
+  color: white;
+  transition: transform 0.3s ease;
+}
+
+.toggle-icon.expanded {
+  transform: rotate(180deg);
+}
+
+.detail-data-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 1px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.detail-card {
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.3s;
+  position: relative;
+}
+
+.detail-card:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.detail-card.highlight {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.detail-label {
+  font-size: 12px;
+  opacity: 0.9;
+  margin-bottom: 6px;
+  color: white;
+}
+
+.detail-value {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 2px;
+  color: white;
+}
+
+.detail-value.negative {
+  color: #ffcdd2;
+}
+
+.detail-value.warning {
+  color: #fff3e0;
+}
+
+.detail-unit {
+  font-size: 10px;
+  opacity: 0.8;
+  color: white;
+}
+
+.detail-supplement {
+  font-size: 10px;
   opacity: 0.7;
   margin-top: 4px;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 /* 数据详情弹窗 */
