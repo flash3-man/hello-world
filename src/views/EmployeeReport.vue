@@ -364,16 +364,29 @@ export default {
     
     // 导出数据
     exportData() {
-      // 实现数据导出逻辑
-      const formats = ['Excel', 'PDF', 'CSV']
-      const selectedFormat = prompt(`选择导出格式：\n${formats.map((f, i) => `${i + 1}. ${f}`).join('\n')}`, '1')
-      
-      if (selectedFormat) {
-        const formatIndex = parseInt(selectedFormat) - 1
-        if (formatIndex >= 0 && formatIndex < formats.length) {
-          alert(`正在导出 ${formats[formatIndex]} 格式的员工业绩汇总表...`)
-          // 这里可以调用实际的导出API
+      try {
+        // 实现数据导出逻辑
+        const formats = ['Excel', 'PDF', 'CSV']
+        const selectedFormat = prompt(`选择导出格式：\n${formats.map((f, i) => `${i + 1}. ${f}`).join('\n')}`, '1')
+        
+        if (selectedFormat && selectedFormat.trim()) {
+          const formatIndex = parseInt(selectedFormat) - 1
+          if (formatIndex >= 0 && formatIndex < formats.length) {
+            alert(`正在导出 ${formats[formatIndex]} 格式的员工业绩汇总表...`)
+            // 这里可以调用实际的导出API
+            console.log('导出数据:', {
+              format: formats[formatIndex],
+              dateRange: this.currentDateRange,
+              filters: this.selectedFilters,
+              employeeData: this.employeeData
+            })
+          } else {
+            alert('请选择有效的导出格式')
+          }
         }
+      } catch (error) {
+        console.error('导出功能出错:', error)
+        alert('导出功能暂时不可用，请稍后重试')
       }
     },
     
@@ -408,10 +421,14 @@ export default {
     
     // 筛选相关方法
     openFilterSelector(filterKey) {
-      this.currentFilterKey = filterKey
-      this.currentFilterTitle = this.filterOptions.find(f => f.key === filterKey)?.label || ''
-      this.showFilterModal = true
-      this.filterSearchQuery = ''
+      try {
+        this.currentFilterKey = filterKey
+        this.currentFilterTitle = this.filterOptions.find(f => f.key === filterKey)?.label || ''
+        this.showFilterModal = true
+        this.filterSearchQuery = ''
+      } catch (error) {
+        console.error('打开筛选器出错:', error)
+      }
     },
     
     hideFilterModal() {
@@ -421,17 +438,24 @@ export default {
     },
     
     toggleFilterOption(option) {
-      option.selected = !option.selected
+      if (option && typeof option === 'object') {
+        option.selected = !option.selected
+      }
     },
     
     confirmFilterSelection() {
-      // 保存当前筛选器的选择
-      if (this.currentFilterKey) {
-        this.selectedFilters[this.currentFilterKey] = this.currentFilterOptions
-          .filter(option => option.selected)
-          .map(option => option.value)
+      try {
+        // 保存当前筛选器的选择
+        if (this.currentFilterKey) {
+          this.selectedFilters[this.currentFilterKey] = this.currentFilterOptions
+            .filter(option => option.selected)
+            .map(option => option.value)
+        }
+        this.hideFilterModal()
+      } catch (error) {
+        console.error('确认筛选选择出错:', error)
+        alert('筛选功能暂时不可用，请稍后重试')
       }
-      this.hideFilterModal()
     },
     
     getSelectedFilterCount(filterKey) {
@@ -482,12 +506,18 @@ export default {
     
     // 数据刷新
     refreshData() {
-      // 根据当前筛选条件重新加载数据
-      console.log('刷新数据：', {
-        dateRange: this.currentDateRange,
-        filters: this.selectedFilters
-      })
-      // 这里可以调用API获取最新数据
+      try {
+        // 根据当前筛选条件重新加载数据
+        console.log('刷新数据：', {
+          dateRange: this.currentDateRange,
+          filters: this.selectedFilters
+        })
+        // 这里可以调用API获取最新数据
+        // 模拟数据加载成功
+      } catch (error) {
+        console.error('数据刷新出错:', error)
+        alert('数据加载失败，请检查网络连接后重试')
+      }
     }
   },
   
@@ -495,16 +525,22 @@ export default {
   mounted() {
     // 页面加载时初始化数据
     this.refreshData()
-  },
-  
-  // 点击外部关闭面板
-  created() {
-    document.addEventListener('click', (e) => {
+    
+    // 添加点击外部关闭面板的监听器
+    this.clickOutsideHandler = (e) => {
       // 点击日期面板外部时关闭面板
       if (!e.target.closest('.date-filter-section')) {
         this.showDatePanel = false
       }
-    })
+    }
+    document.addEventListener('click', this.clickOutsideHandler)
+  },
+  
+  // 组件销毁时清理监听器
+  beforeUnmount() {
+    if (this.clickOutsideHandler) {
+      document.removeEventListener('click', this.clickOutsideHandler)
+    }
   }
 }
 </script>
