@@ -1,235 +1,334 @@
 <template>
   <div class="employee-analysis">
-    <!-- 顶部操作区 - 人员与时间筛选 -->
-    <div class="header-section">
-      <div class="header-bar">
-        <button class="back-btn" @click="goBack">
-          <svg class="back-icon" width="20" height="20" viewBox="0 0 20 20">
-            <path d="M12 16L6 10L12 4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
-        <h1 class="page-title">员工数据分析</h1>
-        <div class="header-spacer"></div>
+    <!-- 顶部导航区 -->
+    <div class="header-bar">
+      <button class="back-arrow" @click="goBack">
+        <svg class="arrow-icon" width="20" height="20" viewBox="0 0 20 20">
+          <path d="M12 16L6 10L12 4" stroke="#333333" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <h1 class="page-title">员工整体分析</h1>
+      <div class="date-section">
+        <div class="date-range" @click="showDatePicker">
+          <span class="date-text">{{ currentDateRange }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 维度切换标签 -->
+    <div class="dimension-tabs">
+      <button 
+        v-for="tab in dimensionTabs" 
+        :key="tab.value"
+        class="tab-item"
+        :class="{ active: currentDimension === tab.value }"
+        @click="switchDimension(tab.value)"
+      >
+        {{ tab.label }}
+      </button>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="main-content">
+      <!-- 拜访分析模块 -->
+      <div v-if="currentDimension === 'visit'" class="analysis-module">
+        <div class="module-header">
+          <div class="module-title">
+            <svg class="module-icon" width="16" height="16" viewBox="0 0 16 16">
+              <path d="M8 2L3 7L8 12L13 7L8 2Z" fill="#4A90E2"/>
+            </svg>
+            <span class="title-text">拜访分析</span>
+          </div>
+          <button class="indicator-help" @click="showIndicatorModal('visit')">
+            <span class="help-text">指标说明</span>
+            <svg class="question-icon" width="12" height="12" viewBox="0 0 12 12">
+              <circle cx="6" cy="6" r="5" stroke="#999999" stroke-width="1" fill="none"/>
+              <text x="6" y="8" text-anchor="middle" font-size="8" fill="#999999">?</text>
+            </svg>
+          </button>
+        </div>
+
+        <!-- 拜访数据卡片 -->
+        <div class="data-cards">
+          <div class="data-card" @click="navigateToPerformanceAnalysis('visit-customers')">
+            <div class="card-title">拜访客户数（去重累计）</div>
+            <div class="card-value">{{ visitData.uniqueCustomers }}</div>
+            <div class="card-subtitle">员工平均数 {{ visitData.avgUniqueCustomers }}</div>
+          </div>
+          <div class="data-card" @click="navigateToPerformanceAnalysis('visit-times')">
+            <div class="card-title">拜访客户次数（总数）</div>
+            <div class="card-value">{{ visitData.totalVisits }}</div>
+            <div class="card-subtitle">平均数 {{ visitData.avgVisits }}</div>
+          </div>
+        </div>
+
+        <!-- 行动按钮 -->
+        <div class="action-buttons">
+          <button class="action-btn" @click="navigateToAction('improve-visit')">
+            提升拜访
+          </button>
+          <button class="action-btn" @click="navigateToAction('improve-efficiency')">
+            提高效率
+          </button>
+        </div>
       </div>
 
-      <!-- 人员切换标签 -->
-      <div class="employee-tabs-section">
-        <div class="employee-tabs">
+      <!-- 销售分析模块 -->
+      <div v-if="currentDimension === 'sales'" class="analysis-module">
+        <div class="module-header">
+          <div class="module-title">
+            <svg class="module-icon" width="16" height="16" viewBox="0 0 16 16">
+              <path d="M2 4L8 2L14 4V12L8 14L2 12V4Z" fill="#4A90E2"/>
+            </svg>
+            <span class="title-text">销售分析</span>
+          </div>
+          <button class="indicator-help" @click="showIndicatorModal('sales')">
+            <span class="help-text">指标说明</span>
+            <svg class="question-icon" width="12" height="12" viewBox="0 0 12 12">
+              <circle cx="6" cy="6" r="5" stroke="#999999" stroke-width="1" fill="none"/>
+              <text x="6" y="8" text-anchor="middle" font-size="8" fill="#999999">?</text>
+            </svg>
+          </button>
+        </div>
+
+        <!-- 核心数据卡 -->
+        <div class="core-data-cards">
+          <div class="core-card">
+            <div class="card-title">销售金额</div>
+            <div class="card-value sales">¥{{ formatAmount(salesData.salesAmount) }}</div>
+            <div class="card-subtitle">员工中位数 ¥{{ formatAmount(salesData.medianSales) }}</div>
+          </div>
+          <div class="core-card">
+            <div class="card-title">退货金额</div>
+            <div class="card-value return">¥{{ formatAmount(salesData.returnAmount) }}</div>
+            <div class="card-subtitle">员工中位数 ¥{{ formatAmount(salesData.medianReturn) }}</div>
+          </div>
+        </div>
+
+        <!-- 员工类型分析 -->
+        <div class="employee-type-analysis">
+          <div class="analysis-title">员工类型分析</div>
+          <div class="type-grid">
+            <div class="type-card good" @click="navigateToEmployeePerformance('high-sales-low-return')">
+              <div class="type-label">销售多退货少</div>
+              <div class="type-count">{{ salesData.highSalesLowReturn }}人</div>
+              <div class="type-desc">表现好</div>
+            </div>
+            <div class="type-card warning" @click="navigateToEmployeePerformance('high-sales-high-return')">
+              <div class="type-label">销售多退货多</div>
+              <div class="type-count">{{ salesData.highSalesHighReturn }}人</div>
+              <div class="type-desc">有压货风险</div>
+            </div>
+            <div class="type-card normal" @click="navigateToEmployeePerformance('low-sales-low-return')">
+              <div class="type-label">销售少退货少</div>
+              <div class="type-count">{{ salesData.lowSalesLowReturn }}人</div>
+              <div class="type-desc">表现一般</div>
+            </div>
+            <div class="type-card attention" @click="navigateToEmployeePerformance('low-sales-high-return')">
+              <div class="type-label">销售少退货多</div>
+              <div class="type-count">{{ salesData.lowSalesHighReturn }}人</div>
+              <div class="type-desc">需关注</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 行动按钮 -->
+        <div class="action-buttons">
+          <button class="action-btn" @click="navigateToAction('employee-performance')">
+            员工销售表现
+          </button>
+          <button class="action-btn" @click="navigateToAction('sales-return-analysis')">
+            销售和退货变化分析
+          </button>
+        </div>
+      </div>
+
+      <!-- 铺市分析模块 -->
+      <div v-if="currentDimension === 'market'" class="analysis-module">
+        <div class="module-header">
+          <div class="module-title">
+            <svg class="module-icon" width="16" height="16" viewBox="0 0 16 16">
+              <path d="M3 3H13V13H3V3ZM5 5V11H11V5H5Z" fill="#4A90E2"/>
+            </svg>
+            <span class="title-text">铺市分析</span>
+          </div>
+        </div>
+
+        <!-- 行动按钮 -->
+        <div class="market-actions">
+          <button class="market-action-btn" @click="navigateToAction('customer-coverage')">
+            <div class="action-icon">👥</div>
+            <div class="action-text">提升客户覆盖</div>
+            <div class="action-desc">查看应铺未铺客户</div>
+          </button>
+          <button class="market-action-btn" @click="navigateToAction('brand-coverage')">
+            <div class="action-icon">🏷️</div>
+            <div class="action-text">提升品牌覆盖</div>
+            <div class="action-desc">查看应铺未铺品牌</div>
+          </button>
+          <button class="market-action-btn" @click="navigateToAction('product-coverage')">
+            <div class="action-icon">📦</div>
+            <div class="action-text">提升商品覆盖</div>
+            <div class="action-desc">查看应铺未铺商品</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- 利润分析模块 -->
+      <div v-if="currentDimension === 'profit'" class="analysis-module">
+        <div class="module-header">
+          <div class="module-title">
+            <svg class="module-icon" width="16" height="16" viewBox="0 0 16 16">
+              <path d="M8 2L14 4V12L8 14L2 12V4L8 2Z" fill="#4A90E2"/>
+            </svg>
+            <span class="title-text">利润</span>
+          </div>
+          <button class="indicator-help" @click="showIndicatorModal('profit')">
+            <span class="help-text">指标说明</span>
+            <svg class="question-icon" width="12" height="12" viewBox="0 0 12 12">
+              <circle cx="6" cy="6" r="5" stroke="#999999" stroke-width="1" fill="none"/>
+              <text x="6" y="8" text-anchor="middle" font-size="8" fill="#999999">?</text>
+            </svg>
+          </button>
+          <div class="compare-toggle">
+            <button 
+              class="toggle-btn"
+              :class="{ active: profitCompareType === 'mom' }"
+              @click="profitCompareType = 'mom'"
+            >
+              看环比
+            </button>
+            <button 
+              class="toggle-btn"
+              :class="{ active: profitCompareType === 'yoy' }"
+              @click="profitCompareType = 'yoy'"
+            >
+              看同比
+            </button>
+          </div>
+        </div>
+
+        <!-- 核心数据卡（四宫格） -->
+        <div class="profit-data-grid">
+          <div class="profit-card" @click="showProfitDetail('employee-profit')">
+            <div class="card-title">员工利润</div>
+            <div class="card-value negative">¥{{ formatAmount(profitData.employeeProfit) }}</div>
+            <div class="card-change negative">
+              {{ profitCompareType === 'mom' ? '环比' : '同比' }} ↓{{ profitData.profitChange }}%
+            </div>
+          </div>
+          <div class="profit-card" @click="showProfitDetail('net-sales')">
+            <div class="card-title">净销售额</div>
+            <div class="card-value">¥{{ formatAmount(profitData.netSales) }}</div>
+            <div class="card-change positive">
+              {{ profitCompareType === 'mom' ? '环比' : '同比' }} ↑{{ profitData.netSalesChange }}%
+            </div>
+          </div>
+          <div class="profit-card" @click="showProfitDetail('sales-amount')">
+            <div class="card-title">销售金额</div>
+            <div class="card-value">¥{{ formatAmount(profitData.salesAmount) }}</div>
+            <div class="card-change positive">
+              {{ profitCompareType === 'mom' ? '环比' : '同比' }} ↑{{ profitData.salesChange }}%
+            </div>
+          </div>
+          <div class="profit-card" @click="showProfitDetail('product-cost')">
+            <div class="card-title">商品成本</div>
+            <div class="card-value">¥{{ formatAmount(profitData.productCost) }}</div>
+            <div class="card-change positive">
+              {{ profitCompareType === 'mom' ? '环比' : '同比' }} ↑{{ profitData.costChange }}%
+            </div>
+          </div>
+          <div class="profit-card highlight" @click="showProfitDetail('gross-profit')">
+            <div class="card-title">销售毛利</div>
+            <div class="card-value">¥{{ formatAmount(profitData.grossProfit) }}</div>
+            <div class="card-change positive highlight">
+              {{ profitCompareType === 'mom' ? '环比' : '同比' }} ↑{{ profitData.grossProfitChange }}%
+            </div>
+          </div>
+        </div>
+
+        <!-- 员工利润列表 -->
+        <div class="employee-profit-list">
+          <div class="list-header">
+            <div class="list-title">员工利润表现</div>
+            <div class="sort-options">
+              <button 
+                class="sort-btn"
+                :class="{ active: profitSortBy === 'growthRate' }"
+                @click="profitSortBy = 'growthRate'"
+              >
+                按增长率
+              </button>
+              <button 
+                class="sort-btn"
+                :class="{ active: profitSortBy === 'changeValue' }"
+                @click="profitSortBy = 'changeValue'"
+              >
+                按变化值
+              </button>
+            </div>
+          </div>
+          <div class="employee-list">
+            <div 
+              v-for="employee in sortedEmployeeProfit" 
+              :key="employee.id"
+              class="employee-item"
+              @click="viewEmployeeDetail(employee.id)"
+            >
+              <div class="employee-info">
+                <div class="employee-name">{{ employee.name }}</div>
+                <div class="employee-role">{{ employee.role }}</div>
+              </div>
+              <div class="profit-metrics">
+                <div class="growth-rate" :class="{ positive: employee.growthRate > 0, negative: employee.growthRate < 0 }">
+                  增长率 {{ employee.growthRate > 0 ? '↑' : '↓' }}{{ Math.abs(employee.growthRate) }}%
+                </div>
+                <div class="change-value" :class="{ positive: employee.changeValue > 0, negative: employee.changeValue < 0 }">
+                  变化值 {{ employee.changeValue > 0 ? '+' : '' }}{{ formatAmount(employee.changeValue) }}
+                </div>
+              </div>
+              <svg class="detail-arrow" width="16" height="16" viewBox="0 0 16 16">
+                <path d="M6 4L10 8L6 12" stroke="#999999" stroke-width="1.5" fill="none"/>
+              </svg>
+            </div>
+          </div>
+          <button class="load-more-btn" @click="loadMoreEmployees">
+            查看更多
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 日期选择器弹窗 -->
+    <div v-if="showDateModal" class="modal-overlay" @click="showDateModal = false">
+      <div class="date-modal" @click.stop>
+        <div class="modal-header">
+          <h3>选择查询时间</h3>
+          <button class="close-btn" @click="showDateModal = false">×</button>
+        </div>
+        <div class="date-options">
           <button 
-            v-for="employee in employeeList" 
-            :key="employee.id"
-            class="employee-tab"
-            :class="{ active: selectedEmployeeId === employee.id }"
-            @click="selectEmployee(employee.id)"
+            v-for="option in dateOptions" 
+            :key="option.value"
+            class="date-option"
+            :class="{ active: selectedDateOption === option.value }"
+            @click="selectDateOption(option.value)"
           >
-            {{ employee.name }}
+            {{ option.label }}
           </button>
-        </div>
-      </div>
-
-      <!-- 时间筛选区 -->
-      <div class="time-filter-section">
-        <div class="time-group">
-          <label class="time-label">统计时间：</label>
-          <div class="time-picker" @click="showStatTimePicker = true">
-            <span class="time-text">{{ statTimeRange }}</span>
-            <svg class="time-arrow" width="12" height="12" viewBox="0 0 12 12">
-              <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" fill="none"/>
-            </svg>
-          </div>
-        </div>
-        <div class="time-group">
-          <label class="time-label">对比时间：</label>
-          <div class="time-picker" @click="showCompareTimePicker = true">
-            <span class="time-text">{{ compareTimeRange }}</span>
-            <svg class="time-arrow" width="12" height="12" viewBox="0 0 12 12">
-              <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" fill="none"/>
-            </svg>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 数据展示区 - 综合实力展现 -->
-    <div class="analysis-section">
-      <!-- 标题与指标说明 -->
-      <div class="analysis-header">
-        <h2 class="analysis-title">综合实力展现</h2>
-        <button class="indicator-info-btn" @click="showIndicatorModal = true">指标说明</button>
-      </div>
-
-      <!-- 雷达图区域 -->
-      <div class="radar-chart-container">
-        <div class="chart-wrapper">
-          <canvas ref="radarChart" class="radar-chart"></canvas>
-        </div>
-        <div class="chart-legend">
-          <div class="legend-item">
-            <div class="legend-color current"></div>
-            <span class="legend-text">统计期间 ({{ statTimeRange }})</span>
-          </div>
-          <div class="legend-item">
-            <div class="legend-color compare"></div>
-            <span class="legend-text">对比期间 ({{ compareTimeRange }})</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- 详细指标数据 -->
-      <div class="metrics-grid">
-        <div 
-          v-for="metric in employeeMetrics" 
-          :key="metric.key"
-          class="metric-card"
-        >
-          <div class="metric-header">
-            <span class="metric-name">{{ metric.name }}</span>
-            <span class="metric-unit">{{ metric.unit }}</span>
-          </div>
-          <div class="metric-values">
-            <div class="current-value">
-              <span class="value-number">{{ metric.currentValue }}</span>
-              <span class="value-label">当前</span>
-            </div>
-            <div class="compare-value">
-              <span class="value-number">{{ metric.compareValue }}</span>
-              <span class="value-label">对比</span>
-            </div>
-          </div>
-          <div class="metric-change">
-            <span class="change-value" :class="getChangeClass(metric.change)">
-              {{ metric.change }}
-            </span>
-            <span class="change-label">变化</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- 业绩分析图表 -->
-      <div class="performance-charts">
-        <div class="chart-card">
-          <div class="chart-title">
-            <h3>拜访客户趋势</h3>
-            <span class="chart-period">{{ statTimeRange }}</span>
-          </div>
-          <div class="chart-content">
-            <canvas ref="visitChart" class="trend-chart"></canvas>
-          </div>
-        </div>
-
-        <div class="chart-card">
-          <div class="chart-title">
-            <h3>销售额趋势</h3>
-            <span class="chart-period">{{ statTimeRange }}</span>
-          </div>
-          <div class="chart-content">
-            <canvas ref="salesChart" class="trend-chart"></canvas>
-          </div>
-        </div>
-      </div>
-
-      <!-- 客户分析明细 -->
-      <div class="customer-analysis">
-        <div class="section-header">
-          <h3 class="section-title">客户分析明细</h3>
-          <button class="detail-btn" @click="showCustomerDetail = !showCustomerDetail">
-            {{ showCustomerDetail ? '收起' : '展开' }}详情
-            <svg class="detail-arrow" :class="{ open: showCustomerDetail }" width="12" height="12" viewBox="0 0 12 12">
-              <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" fill="none"/>
-            </svg>
-          </button>
-        </div>
-
-        <div v-if="showCustomerDetail" class="customer-detail">
-          <div class="detail-grid">
-            <div class="detail-item">
-              <span class="detail-label">新增客户</span>
-              <span class="detail-value">{{ customerAnalysis.newCustomers }}个</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">活跃客户</span>
-              <span class="detail-value">{{ customerAnalysis.activeCustomers }}个</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">流失客户</span>
-              <span class="detail-value">{{ customerAnalysis.lostCustomers }}个</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">客户留存率</span>
-              <span class="detail-value">{{ customerAnalysis.retentionRate }}%</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">平均客单价</span>
-              <span class="detail-value">{{ customerAnalysis.avgOrderValue }}元</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">重复购买率</span>
-              <span class="detail-value">{{ customerAnalysis.repeatPurchaseRate }}%</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 统计时间选择弹窗 -->
-    <div v-if="showStatTimePicker" class="time-overlay" @click="showStatTimePicker = false">
-      <div class="time-modal" @click.stop>
-        <div class="time-header">
-          <h3>选择统计时间</h3>
-          <button class="time-close" @click="showStatTimePicker = false">✕</button>
-        </div>
-        <div class="time-content">
-          <div class="time-options">
-            <button 
-              v-for="option in timeOptions" 
-              :key="option.value"
-              class="time-option-btn"
-              :class="{ active: statTimeValue === option.value }"
-              @click="selectStatTime(option)"
-            >
-              {{ option.label }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 对比时间选择弹窗 -->
-    <div v-if="showCompareTimePicker" class="time-overlay" @click="showCompareTimePicker = false">
-      <div class="time-modal" @click.stop>
-        <div class="time-header">
-          <h3>选择对比时间</h3>
-          <button class="time-close" @click="showCompareTimePicker = false">✕</button>
-        </div>
-        <div class="time-content">
-          <div class="time-options">
-            <button 
-              v-for="option in timeOptions" 
-              :key="option.value"
-              class="time-option-btn"
-              :class="{ active: compareTimeValue === option.value }"
-              @click="selectCompareTime(option)"
-            >
-              {{ option.label }}
-            </button>
-          </div>
         </div>
       </div>
     </div>
 
     <!-- 指标说明弹窗 -->
-    <div v-if="showIndicatorModal" class="indicator-overlay" @click="showIndicatorModal = false">
+    <div v-if="showIndicator" class="modal-overlay" @click="showIndicator = false">
       <div class="indicator-modal" @click.stop>
-        <div class="indicator-header">
-          <h3>指标计算说明</h3>
-          <button class="indicator-close" @click="showIndicatorModal = false">✕</button>
+        <div class="modal-header">
+          <h3>{{ currentIndicatorTitle }}</h3>
+          <button class="close-btn" @click="showIndicator = false">×</button>
         </div>
         <div class="indicator-content">
-          <div v-for="indicator in indicatorExplanations" :key="indicator.key" class="indicator-item">
-            <div class="indicator-name">{{ indicator.name }}</div>
-            <div class="indicator-formula">{{ indicator.formula }}</div>
-            <div class="indicator-description">{{ indicator.description }}</div>
-          </div>
+          <div v-html="currentIndicatorContent"></div>
         </div>
       </div>
     </div>
@@ -241,1127 +340,1169 @@ export default {
   name: 'EmployeeAnalysis',
   data() {
     return {
-      // 界面状态
-      showStatTimePicker: false,
-      showCompareTimePicker: false,
-      showIndicatorModal: false,
-      showCustomerDetail: false,
+      currentDateRange: '06-01～06-26',
+      currentDimension: 'visit', // visit, sales, market, profit
+      showDateModal: false,
+      showIndicator: false,
+      selectedDateOption: 'current',
+      profitCompareType: 'mom', // mom: 环比, yoy: 同比
+      profitSortBy: 'growthRate', // growthRate, changeValue
+      currentIndicatorTitle: '',
+      currentIndicatorContent: '',
       
-      // 选中的员工
-      selectedEmployeeId: 1,
-      
-      // 时间选择
-      statTimeValue: 'current_month',
-      statTimeRange: '06-01~06-20',
-      compareTimeValue: 'last_month',
-      compareTimeRange: '05-01~05-20',
-      
-      // 员工列表
-      employeeList: [
-        { id: 1, name: '拉拉' },
-        { id: 2, name: '仇胜丽' },
-        { id: 3, name: '黄保杰' },
-        { id: 4, name: '王飞' },
-        { id: 5, name: '徐伟' }
+      // 维度标签
+      dimensionTabs: [
+        { value: 'visit', label: '拜访分析' },
+        { value: 'sales', label: '销售分析' },
+        { value: 'market', label: '铺市分析' },
+        { value: 'profit', label: '利润' }
       ],
       
-      // 时间选项
-      timeOptions: [
-        { value: 'current_month', label: '本月 (06-01~06-20)', range: '06-01~06-20' },
-        { value: 'last_month', label: '上月 (05-01~05-20)', range: '05-01~05-20' },
-        { value: 'current_quarter', label: '本季度 (04-01~06-20)', range: '04-01~06-20' },
-        { value: 'last_quarter', label: '上季度 (01-01~03-31)', range: '01-01~03-31' },
-        { value: 'current_year', label: '今年 (01-01~06-20)', range: '01-01~06-20' },
-        { value: 'last_year', label: '去年同期 (01-01~06-20)', range: '2024-01-01~2024-06-20' }
+      // 日期选择选项
+      dateOptions: [
+        { value: 'today', label: '今天' },
+        { value: 'yesterday', label: '昨天' },
+        { value: 'current', label: '本月' },
+        { value: 'last', label: '上月' },
+        { value: 'last7', label: '近7天' },
+        { value: 'last30', label: '近30天' },
+        { value: 'quarter', label: '本季度' },
+        { value: 'year', label: '本年度' }
       ],
       
-      // 员工指标数据
-      employeeMetrics: [
-        {
-          key: 'diligence',
-          name: '勤劳度',
-          unit: '拜访次数',
-          currentValue: 45,
-          compareValue: 38,
-          change: '+18.4%'
-        },
-        {
-          key: 'payment',
-          name: '回款',
-          unit: '销售已结',
-          currentValue: '12,580.66',
-          compareValue: '9,240.33',
-          change: '+36.1%'
-        },
-        {
-          key: 'product_promotion',
-          name: '推品',
-          unit: '订单SKU数',
-          currentValue: 156,
-          compareValue: 142,
-          change: '+9.9%'
-        },
-        {
-          key: 'customer_development',
-          name: '客户开发',
-          unit: '新增客户',
-          currentValue: 8,
-          compareValue: 5,
-          change: '+60.0%'
-        },
-        {
-          key: 'sales_performance',
-          name: '销售业绩',
-          unit: '销售额',
-          currentValue: '68,450.88',
-          compareValue: '52,330.76',
-          change: '+30.8%'
-        },
-        {
-          key: 'order_frequency',
-          name: '订单频次',
-          unit: '订单数',
-          currentValue: 89,
-          compareValue: 72,
-          change: '+23.6%'
-        }
-      ],
-      
-      // 客户分析数据
-      customerAnalysis: {
-        newCustomers: 8,
-        activeCustomers: 42,
-        lostCustomers: 3,
-        retentionRate: 93.3,
-        avgOrderValue: 768.99,
-        repeatPurchaseRate: 67.8
+      // 拜访分析数据
+      visitData: {
+        uniqueCustomers: 16,
+        avgUniqueCustomers: 1.7,
+        totalVisits: 20,
+        avgVisits: 2
       },
       
-      // 指标说明
-      indicatorExplanations: [
+      // 销售分析数据
+      salesData: {
+        salesAmount: 53552.74,
+        medianSales: 494.00,
+        returnAmount: 956.68,
+        medianReturn: 0.00,
+        highSalesLowReturn: 0,
+        highSalesHighReturn: 9,
+        lowSalesLowReturn: 0,
+        lowSalesHighReturn: 9
+      },
+      
+      // 利润分析数据
+      profitData: {
+        employeeProfit: -6617.54,
+        profitChange: 104.06,
+        netSales: 52596.06,
+        netSalesChange: 76.82,
+        salesAmount: 53552.74,
+        salesChange: 76.41,
+        productCost: 49908.24,
+        costChange: 18.91,
+        grossProfit: 2251.46,
+        grossProfitChange: 98.64
+      },
+      
+      // 员工利润数据
+      employeeProfitData: [
         {
-          key: 'diligence',
-          name: '勤劳度',
-          formula: '拜访客户总次数',
-          description: '统计期间内员工实际拜访客户的总次数，体现员工的勤奋程度和客户维护频率。'
+          id: 1,
+          name: '黄保杰',
+          role: '销售代表',
+          growthRate: 687.23,
+          changeValue: 5127.18
         },
         {
-          key: 'payment',
-          name: '回款（销售已结）',
-          formula: '已收款订单金额总和',
-          description: '统计期间内已完成回款的订单金额总和，反映员工的回款能力和客户支付情况。'
+          id: 2,
+          name: '渠道经理',
+          role: '渠道管理',
+          growthRate: 100.00,
+          changeValue: 2.00
         },
         {
-          key: 'product_promotion',
-          name: '推品（订单SKU数）',
-          formula: '订单中不同商品SKU总数',
-          description: '统计期间内员工销售订单涉及的不同商品SKU总数，体现商品推广的广度。'
+          id: 3,
+          name: '张小明',
+          role: '销售代表',
+          growthRate: -15.32,
+          changeValue: -1245.68
         },
         {
-          key: 'customer_development',
-          name: '客户开发',
-          formula: '新增有效客户数量',
-          description: '统计期间内员工成功开发的新客户数量（有下单记录），反映客户拓展能力。'
+          id: 4,
+          name: '李小红',
+          role: '销售代表',
+          growthRate: 45.67,
+          changeValue: 890.34
         },
         {
-          key: 'sales_performance',
-          name: '销售业绩',
-          formula: '销售订单总金额',
-          description: '统计期间内员工完成的销售订单总金额，直接反映销售业绩表现。'
-        },
-        {
-          key: 'order_frequency',
-          name: '订单频次',
-          formula: '订单总数量',
-          description: '统计期间内员工完成的订单总数量，体现销售活动的频繁程度。'
+          id: 5,
+          name: '王小强',
+          role: '客户经理',
+          growthRate: -8.91,
+          changeValue: -567.89
         }
       ]
     }
   },
   
+  computed: {
+    // 排序后的员工利润数据
+    sortedEmployeeProfit() {
+      const data = [...this.employeeProfitData]
+      if (this.profitSortBy === 'growthRate') {
+        return data.sort((a, b) => b.growthRate - a.growthRate)
+      } else {
+        return data.sort((a, b) => b.changeValue - a.changeValue)
+      }
+    }
+  },
+  
   methods: {
+    // 格式化金额
+    formatAmount(amount) {
+      if (amount == null || amount === '') return '0.00'
+      
+      const num = parseFloat(amount)
+      if (isNaN(num)) return '0.00'
+      
+      const absNum = Math.abs(num)
+      
+      return absNum.toLocaleString('zh-CN', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })
+    },
+    
     // 返回上一页
     goBack() {
       this.$router.go(-1)
     },
     
-    // 选择员工
-    selectEmployee(employeeId) {
-      this.selectedEmployeeId = employeeId
-      this.loadEmployeeData(employeeId)
+    // 显示日期选择器
+    showDatePicker() {
+      this.showDateModal = true
     },
     
-    // 选择统计时间
-    selectStatTime(option) {
-      this.statTimeValue = option.value
-      this.statTimeRange = option.range
-      this.showStatTimePicker = false
-      this.loadEmployeeData(this.selectedEmployeeId)
-    },
-    
-    // 选择对比时间
-    selectCompareTime(option) {
-      this.compareTimeValue = option.value
-      this.compareTimeRange = option.range
-      this.showCompareTimePicker = false
-      this.loadEmployeeData(this.selectedEmployeeId)
-    },
-    
-    // 获取变化样式类
-    getChangeClass(change) {
-      if (change.includes('+')) return 'change-positive'
-      if (change.includes('-')) return 'change-negative'
-      return 'change-neutral'
-    },
-    
-    // 加载员工数据
-    loadEmployeeData(employeeId) {
-      console.log('加载员工数据:', {
-        employeeId,
-        statTime: this.statTimeRange,
-        compareTime: this.compareTimeRange
-      })
-      
-      // 这里可以调用API加载员工的具体数据
-      this.updateCharts()
-    },
-    
-    // 更新图表
-    updateCharts() {
-      this.$nextTick(() => {
-        this.drawRadarChart()
-        this.drawVisitChart()
-        this.drawSalesChart()
-      })
-    },
-    
-    // 绘制雷达图
-    drawRadarChart() {
-      const canvas = this.$refs.radarChart
-      if (!canvas) return
-      
-      const ctx = canvas.getContext('2d')
-      const centerX = canvas.width / 2
-      const centerY = canvas.height / 2
-      const radius = Math.min(centerX, centerY) - 40
-      
-      // 清空画布
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
-      
-      // 绘制雷达图网格
-      this.drawRadarGrid(ctx, centerX, centerY, radius)
-      
-      // 绘制数据
-      this.drawRadarData(ctx, centerX, centerY, radius)
-    },
-    
-    // 绘制雷达图网格
-    drawRadarGrid(ctx, centerX, centerY, radius) {
-      const metrics = this.employeeMetrics.slice(0, 6) // 取前6个指标
-      const angleStep = (2 * Math.PI) / metrics.length
-      
-      // 绘制同心圆
-      ctx.strokeStyle = '#e0e0e0'
-      ctx.lineWidth = 1
-      for (let i = 1; i <= 5; i++) {
-        ctx.beginPath()
-        ctx.arc(centerX, centerY, (radius / 5) * i, 0, 2 * Math.PI)
-        ctx.stroke()
+    // 选择日期
+    selectDateOption(value) {
+      this.selectedDateOption = value
+      const dateMap = {
+        'today': '08-11～08-11',
+        'yesterday': '08-10～08-10', 
+        'current': '08-01～08-11',
+        'last': '07-01～07-31',
+        'last7': '08-05～08-11',
+        'last30': '07-12～08-11',
+        'quarter': '06-01～08-11',
+        'year': '01-01～08-11'
       }
-      
-      // 绘制射线和标签
-      ctx.strokeStyle = '#e0e0e0'
-      ctx.fillStyle = '#666666'
-      ctx.font = '12px Arial'
-      ctx.textAlign = 'center'
-      
-      metrics.forEach((metric, index) => {
-        const angle = angleStep * index - Math.PI / 2
-        const x = centerX + Math.cos(angle) * radius
-        const y = centerY + Math.sin(angle) * radius
-        
-        // 绘制射线
-        ctx.beginPath()
-        ctx.moveTo(centerX, centerY)
-        ctx.lineTo(x, y)
-        ctx.stroke()
-        
-        // 绘制标签
-        const labelX = centerX + Math.cos(angle) * (radius + 20)
-        const labelY = centerY + Math.sin(angle) * (radius + 20)
-        ctx.fillText(metric.name, labelX, labelY)
-      })
+      this.currentDateRange = dateMap[value] || '06-01～06-26'
+      this.showDateModal = false
     },
     
-    // 绘制雷达图数据
-    drawRadarData(ctx, centerX, centerY, radius) {
-      const metrics = this.employeeMetrics.slice(0, 6)
-      const angleStep = (2 * Math.PI) / metrics.length
-      
-      // 当前期间数据
-      ctx.strokeStyle = '#007AFF'
-      ctx.fillStyle = 'rgba(0, 122, 255, 0.2)'
-      ctx.lineWidth = 2
-      
-      ctx.beginPath()
-      metrics.forEach((metric, index) => {
-        const angle = angleStep * index - Math.PI / 2
-        // 这里简化处理，实际应该根据数据范围计算比例
-        const value = Math.random() * 0.8 + 0.2 // 0.2-1.0之间
-        const x = centerX + Math.cos(angle) * radius * value
-        const y = centerY + Math.sin(angle) * radius * value
-        
-        if (index === 0) {
-          ctx.moveTo(x, y)
-        } else {
-          ctx.lineTo(x, y)
+    // 切换分析维度
+    switchDimension(dimension) {
+      this.currentDimension = dimension
+    },
+    
+    // 显示指标说明
+    showIndicatorModal(type) {
+      const indicators = {
+        visit: {
+          title: '拜访分析指标说明',
+          content: `
+            <div class="indicator-item">
+              <strong>拜访客户数（去重累计）：</strong>统计期间内员工拜访过的<span class="highlight">不重复客户数量</span>，同一客户多次拜访只计算一次
+            </div>
+            <div class="indicator-item">
+              <strong>拜访客户次数（总数）：</strong>统计期间内员工的<span class="highlight">拜访总次数</span>，包含对同一客户的多次拜访
+            </div>
+            <div class="indicator-item">
+              <strong>计算规则：</strong>
+              <ul>
+                <li>拜访记录以<span class="highlight">实际拜访时间</span>为准</li>
+                <li>电话拜访、上门拜访均纳入统计</li>
+                <li>取消的拜访记录<span class="highlight">不计入</span>统计</li>
+              </ul>
+            </div>
+          `
+        },
+        sales: {
+          title: '销售分析指标说明',
+          content: `
+            <div class="indicator-item">
+              <strong>销售金额：</strong>统计期间内员工完成的<span class="highlight">销售订单总金额</span>，不含税费
+            </div>
+            <div class="indicator-item">
+              <strong>退货金额：</strong>统计期间内员工负责客户的<span class="highlight">退货订单总金额</span>
+            </div>
+            <div class="indicator-item">
+              <strong>员工分类规则：</strong>
+              <ul>
+                <li><span class="highlight">销售多退货少：</span>销售额>平均值且退货率<10%</li>
+                <li><span class="highlight">销售多退货多：</span>销售额>平均值但退货率≥10%</li>
+                <li><span class="highlight">销售少退货少：</span>销售额≤平均值且退货率<10%</li>
+                <li><span class="highlight">销售少退货多：</span>销售额≤平均值且退货率≥10%</li>
+              </ul>
+            </div>
+          `
+        },
+        profit: {
+          title: '利润分析指标说明',
+          content: `
+            <div class="indicator-item">
+              <strong>员工利润：</strong>员工负责客户产生的<span class="highlight">净利润总额</span>，计算公式：销售金额 - 商品成本 - 费用分摊
+            </div>
+            <div class="indicator-item">
+              <strong>净销售额：</strong>销售金额扣除退货后的<span class="highlight">实际销售金额</span>
+            </div>
+            <div class="indicator-item">
+              <strong>销售毛利：</strong>销售金额与商品成本的<span class="highlight">差额</span>，不含其他费用
+            </div>
+            <div class="indicator-item">
+              <strong>环比/同比计算：</strong>
+              <ul>
+                <li><span class="highlight">环比：</span>与上月同期数据对比</li>
+                <li><span class="highlight">同比：</span>与去年同期数据对比</li>
+                <li>增长率 = (当期数值 - 对比期数值) / 对比期数值 × 100%</li>
+              </ul>
+            </div>
+          `
         }
-      })
-      ctx.closePath()
-      ctx.fill()
-      ctx.stroke()
+      }
       
-      // 对比期间数据
-      ctx.strokeStyle = '#FF9900'
-      ctx.fillStyle = 'rgba(255, 153, 0, 0.2)'
-      
-      ctx.beginPath()
-      metrics.forEach((metric, index) => {
-        const angle = angleStep * index - Math.PI / 2
-        const value = Math.random() * 0.7 + 0.1 // 0.1-0.8之间（对比期间稍低）
-        const x = centerX + Math.cos(angle) * radius * value
-        const y = centerY + Math.sin(angle) * radius * value
-        
-        if (index === 0) {
-          ctx.moveTo(x, y)
-        } else {
-          ctx.lineTo(x, y)
-        }
-      })
-      ctx.closePath()
-      ctx.fill()
-      ctx.stroke()
+      const indicator = indicators[type]
+      if (indicator) {
+        this.currentIndicatorTitle = indicator.title
+        this.currentIndicatorContent = indicator.content
+        this.showIndicator = true
+      }
     },
     
-    // 绘制拜访趋势图
-    drawVisitChart() {
-      const canvas = this.$refs.visitChart
-      if (!canvas) return
+    // 导航到具体行动页面
+    navigateToAction(action) {
+      console.log(`导航到行动页面: ${action}`)
       
-      const ctx = canvas.getContext('2d')
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
-      
-      // 模拟数据
-      const data = [12, 15, 8, 18, 22, 19, 25, 16, 14, 20]
-      this.drawLineChart(ctx, data, '#007AFF', canvas.width, canvas.height)
+      // 根据不同的action跳转到对应页面
+      switch(action) {
+        // 拜访分析相关跳转
+        case 'improve-visit':
+        case 'improve-efficiency':
+          // 提升拜访、提高效率 -> 进入拜访分析
+          this.$router.push('/visit-analysis')
+          break
+          
+        // 销售分析相关跳转
+        case 'employee-performance':
+          // 员工销售表现 -> 进入员工业绩汇总表
+          this.$router.push('/employee-performance')
+          break
+          
+        case 'sales-return-analysis':
+          // 销售和退货变化分析 -> 进入业绩变化分析
+          this.$router.push('/performance-analysis')
+          break
+          
+        // 铺市分析相关跳转
+        case 'customer-coverage':
+        case 'brand-coverage':  
+        case 'product-coverage':
+          // 各页签跳转进入铺市分析
+          this.$router.push('/market-analysis')
+          break
+          
+        default:
+          alert('功能开发中...')
+      }
     },
     
-    // 绘制销售趋势图
-    drawSalesChart() {
-      const canvas = this.$refs.salesChart
-      if (!canvas) return
-      
-      const ctx = canvas.getContext('2d')
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
-      
-      // 模拟数据
-      const data = [3200, 4100, 2800, 5600, 6200, 4800, 7200, 5100, 4600, 6800]
-      this.drawLineChart(ctx, data, '#00b42a', canvas.width, canvas.height)
+    // 跳转到业绩变化分析
+    navigateToPerformanceAnalysis(type) {
+      console.log(`跳转到业绩变化分析: ${type}`)
+      // 拜访客户数、拜访客户次数 -> 进入业绩变化分析
+      this.$router.push({
+        path: '/performance-analysis',
+        query: { type: type, source: 'employee-analysis' }
+      })
     },
     
-    // 绘制折线图
-    drawLineChart(ctx, data, color, width, height) {
-      const padding = 40
-      const chartWidth = width - padding * 2
-      const chartHeight = height - padding * 2
+    // 跳转到员工业绩汇总表
+    navigateToEmployeePerformance(category) {
+      console.log(`跳转到员工业绩汇总表: ${category}`)
+      // 员工类型分析各页签 -> 进入员工业绩汇总表
+      this.$router.push({
+        path: '/employee-performance',
+        query: { category: category, source: 'employee-analysis' }
+      })
+    },
+    
+    // 显示利润明细
+    showProfitDetail(type) {
+      console.log(`显示利润明细: ${type}`)
       
-      const maxValue = Math.max(...data)
-      const minValue = Math.min(...data)
-      const range = maxValue - minValue
-      
-      // 绘制网格
-      ctx.strokeStyle = '#f0f0f0'
-      ctx.lineWidth = 1
-      
-      // 水平网格线
-      for (let i = 0; i <= 4; i++) {
-        const y = padding + (chartHeight / 4) * i
-        ctx.beginPath()
-        ctx.moveTo(padding, y)
-        ctx.lineTo(width - padding, y)
-        ctx.stroke()
+      const detailTitles = {
+        'employee-profit': '员工利润明细',
+        'net-sales': '净销售额明细',
+        'sales-amount': '销售金额明细', 
+        'product-cost': '商品成本明细',
+        'gross-profit': '销售毛利明细'
       }
       
-      // 垂直网格线
-      for (let i = 0; i <= data.length - 1; i++) {
-        const x = padding + (chartWidth / (data.length - 1)) * i
-        ctx.beginPath()
-        ctx.moveTo(x, padding)
-        ctx.lineTo(x, height - padding)
-        ctx.stroke()
+      const detailData = {
+        'employee-profit': [
+          { name: '黄保杰', value: 5127.18, change: 687.23 },
+          { name: '渠道经理', value: 2.00, change: 100.00 },
+          { name: '李小红', value: 890.34, change: 45.67 },
+          { name: '张小明', value: -1245.68, change: -15.32 },
+          { name: '王小强', value: -567.89, change: -8.91 }
+        ],
+        'net-sales': [
+          { name: '线上销售', value: 25896.32, change: 82.15 },
+          { name: '线下门店', value: 18542.67, change: 65.43 },
+          { name: '代理商销售', value: 8157.07, change: 98.76 }
+        ],
+        'sales-amount': [
+          { name: '主营商品', value: 42356.89, change: 78.92 },
+          { name: '辅助商品', value: 11195.85, change: 71.23 }
+        ],
+        'product-cost': [
+          { name: '原材料成本', value: 32845.67, change: 15.34 },
+          { name: '加工成本', value: 12876.43, change: 22.87 },
+          { name: '包装成本', value: 4186.14, change: 28.56 }
+        ],
+        'gross-profit': [
+          { name: '主营业务毛利', value: 1856.78, change: 95.23 },
+          { name: '其他业务毛利', value: 394.68, change: 105.87 }
+        ]
       }
       
-      // 绘制数据线
-      ctx.strokeStyle = color
-      ctx.lineWidth = 2
-      ctx.beginPath()
+      // 模拟弹窗显示明细数据
+      const title = detailTitles[type] || '明细数据'
+      const data = detailData[type] || []
       
-      data.forEach((value, index) => {
-        const x = padding + (chartWidth / (data.length - 1)) * index
-        const y = height - padding - ((value - minValue) / range) * chartHeight
-        
-        if (index === 0) {
-          ctx.moveTo(x, y)
-        } else {
-          ctx.lineTo(x, y)
-        }
+      let detailContent = `${title}\n\n`
+      data.forEach(item => {
+        const changeText = item.change > 0 ? `↑${item.change}%` : `↓${Math.abs(item.change)}%`
+        detailContent += `${item.name}: ¥${this.formatAmount(item.value)} (${changeText})\n`
       })
       
-      ctx.stroke()
-      
-      // 绘制数据点
-      ctx.fillStyle = color
-      data.forEach((value, index) => {
-        const x = padding + (chartWidth / (data.length - 1)) * index
-        const y = height - padding - ((value - minValue) / range) * chartHeight
-        
-        ctx.beginPath()
-        ctx.arc(x, y, 3, 0, 2 * Math.PI)
-        ctx.fill()
-      })
-    }
-  },
-  
-  mounted() {
-    // 从路由参数获取员工信息
-    if (this.$route.query.employeeId) {
-      this.selectedEmployeeId = parseInt(this.$route.query.employeeId)
-    }
+      alert(detailContent)
+    },
     
-    if (this.$route.query.dateRange) {
-      this.statTimeRange = this.$route.query.dateRange
-    }
+    // 查看员工详情
+    viewEmployeeDetail(employeeId) {
+      const employee = this.employeeProfitData.find(emp => emp.id === employeeId)
+      if (employee) {
+        console.log(`查看员工详情: ${employee.name}`)
+        alert(`查看 ${employee.name} 的利润明细`)
+      }
+    },
     
-    // 设置画布尺寸
-    this.$nextTick(() => {
-      if (this.$refs.radarChart) {
-        this.$refs.radarChart.width = 300
-        this.$refs.radarChart.height = 300
-      }
-      
-      if (this.$refs.visitChart) {
-        this.$refs.visitChart.width = 400
-        this.$refs.visitChart.height = 200
-      }
-      
-      if (this.$refs.salesChart) {
-        this.$refs.salesChart.width = 400
-        this.$refs.salesChart.height = 200
-      }
-      
-      this.updateCharts()
-    })
+    // 加载更多员工
+    loadMoreEmployees() {
+      console.log('加载更多员工数据')
+      alert('加载更多员工数据...')
+    }
   }
 }
 </script>
 
 <style scoped>
-/* 整体布局 */
+/* 整体页面布局 */
 .employee-analysis {
   min-height: 100vh;
-  background-color: #f8f9fa;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-}
-
-/* 顶部操作区 */
-.header-section {
-  background-color: #ffffff;
-  border-bottom: 1px solid #eaeaea;
-}
-
-.header-bar {
+  background-color: #FFFFFF;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+}
+
+/* 顶部导航区 */
+.header-bar {
+  width: 100%;
+  min-height: 3.5rem;
+  display: flex;
   align-items: center;
-  padding: 12px 16px;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background-color: #FFFFFF;
+  border-bottom: 1px solid #F0F0F0;
   position: sticky;
   top: 0;
-  z-index: 1000;
-  background-color: #ffffff;
+  z-index: 100;
+  box-sizing: border-box;
 }
 
-.back-btn {
+.back-arrow {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  transition: background-color 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: none;
-  border: none;
-  color: #007AFF;
-  cursor: pointer;
-  padding: 6px;
-  border-radius: 4px;
-  transition: background-color 0.2s;
-  min-width: 32px;
-  height: 32px;
 }
 
-.back-btn:hover {
-  background-color: #f0f8ff;
+.back-arrow:hover {
+  background-color: #F5F5F5;
 }
 
-.back-icon {
-  width: 20px;
-  height: 20px;
-  color: #007AFF;
+.arrow-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
 }
 
 .page-title {
   color: #333333;
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 600;
   margin: 0;
   flex: 1;
   text-align: center;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
+  padding: 0 1rem;
 }
 
-.header-spacer {
-  width: 32px;
-}
-
-/* 员工切换标签 */
-.employee-tabs-section {
-  padding: 12px 16px;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.employee-tabs {
+.date-section {
   display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 4px;
+  align-items: center;
 }
 
-.employee-tab {
-  background-color: #f8f9fa;
-  border: 1px solid #e0e0e0;
-  border-radius: 20px;
-  color: #666666;
-  font-size: 14px;
+.date-range {
+  cursor: pointer;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  transition: background-color 0.2s;
+  border: 1px solid #E5E7EB;
+  background-color: #F9FAFB;
+}
+
+.date-range:hover {
+  background-color: #F3F4F6;
+  border-color: #D1D5DB;
+}
+
+.date-text {
+  color: #999999;
+  font-size: 0.875rem;
   font-weight: 500;
-  padding: 8px 16px;
+  white-space: nowrap;
+}
+
+/* 维度切换标签 */
+.dimension-tabs {
+  display: flex;
+  padding: 0 1rem;
+  background-color: #FFFFFF;
+  border-bottom: 1px solid #F0F0F0;
+  gap: 0;
+}
+
+.tab-item {
+  background: none;
+  border: none;
+  padding: 0.75rem 1rem;
+  color: #999999;
+  font-size: 0.875rem;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
+  border-bottom: 2px solid transparent;
   white-space: nowrap;
+}
+
+.tab-item:hover {
+  color: #4A90E2;
+}
+
+.tab-item.active {
+  color: #4A90E2;
+  border-bottom-color: #4A90E2;
+}
+
+/* 主内容区 */
+.main-content {
+  flex: 1;
+  padding: 1rem;
+  background-color: #F8F9FA;
+}
+
+/* 分析模块 */
+.analysis-module {
+  background-color: #FFFFFF;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* 模块头部 */
+.module-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #F0F0F0;
+}
+
+.module-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.module-icon {
+  width: 1rem;
+  height: 1rem;
   flex-shrink: 0;
 }
 
-.employee-tab:hover {
-  border-color: #007AFF;
-  background-color: #f0f8ff;
-  color: #007AFF;
+.title-text {
+  color: #333333;
+  font-size: 0.875rem;
+  font-weight: 600;
 }
 
-.employee-tab.active {
-  background-color: #007AFF;
-  border-color: #007AFF;
-  color: #ffffff;
-}
-
-/* 时间筛选区 */
-.time-filter-section {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 12px 16px;
-}
-
-.time-group {
+.indicator-help {
+  background: none;
+  border: none;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 0.25rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  transition: background-color 0.2s;
 }
 
-.time-label {
-  color: #666666;
-  font-size: 14px;
-  font-weight: 500;
-  min-width: 80px;
+.indicator-help:hover {
+  background-color: #F4F4F4;
 }
 
-.time-picker {
+.help-text {
+  color: #999999;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.question-icon {
+  width: 0.75rem;
+  height: 0.75rem;
+  flex-shrink: 0;
+}
+
+.compare-toggle {
   display: flex;
-  align-items: center;
-  gap: 6px;
-  background-color: #ffffff;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  padding: 8px 12px;
+  gap: 0.5rem;
+}
+
+.toggle-btn {
+  background: none;
+  border: 1px solid #E5E7EB;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.25rem;
+  color: #999999;
+  font-size: 0.75rem;
   cursor: pointer;
   transition: all 0.2s;
-  flex: 1;
-  max-width: 200px;
 }
 
-.time-picker:hover {
-  border-color: #007AFF;
-  background-color: #f8fbff;
+.toggle-btn:hover {
+  border-color: #4A90E2;
+  color: #4A90E2;
 }
 
-.time-text {
-  color: #333333;
-  font-size: 14px;
-  font-weight: 500;
+.toggle-btn.active {
+  background-color: #4A90E2;
+  border-color: #4A90E2;
+  color: #FFFFFF;
 }
 
-.time-arrow {
+/* 拜访分析 - 数据卡片 */
+.data-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.data-card {
+  background-color: #F4F4F4;
+  padding: 1rem;
+  border-radius: 0.375rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.data-card:hover {
+  background-color: #E8F4FD;
+  border: 1px solid #4A90E2;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(74, 144, 226, 0.2);
+}
+
+.card-title {
   color: #666666;
+  font-size: 0.75rem;
+  margin-bottom: 0.5rem;
 }
 
-/* 分析区域 */
-.analysis-section {
-  padding: 16px;
+.card-value {
+  color: #333333;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
 }
 
-.analysis-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
+.card-subtitle {
+  color: #999999;
+  font-size: 0.6875rem;
+}
+
+/* 销售分析 - 核心数据卡 */
+.core-data-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.core-card {
+  background-color: #FFFFFF;
+  border: 1px solid #F0F0F0;
+  padding: 1rem;
+  border-radius: 0.375rem;
+  text-align: center;
+}
+
+.card-value.sales {
+  color: #22C55E;
+}
+
+.card-value.return {
+  color: #EF4444;
+}
+
+/* 员工类型分析 */
+.employee-type-analysis {
+  margin-bottom: 1.5rem;
 }
 
 .analysis-title {
   color: #333333;
-  font-size: 20px;
+  font-size: 0.875rem;
   font-weight: 600;
-  margin: 0;
+  margin-bottom: 1rem;
 }
 
-.indicator-info-btn {
-  background: none;
-  border: none;
-  color: #007AFF;
-  font-size: 14px;
-  cursor: pointer;
-  text-decoration: underline;
-  transition: color 0.2s;
-}
-
-.indicator-info-btn:hover {
-  color: #0056d6;
-}
-
-/* 雷达图区域 */
-.radar-chart-container {
-  background-color: #ffffff;
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-}
-
-.chart-wrapper {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 16px;
-}
-
-.radar-chart {
-  max-width: 100%;
-  height: auto;
-}
-
-.chart-legend {
-  display: flex;
-  justify-content: center;
-  gap: 24px;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.legend-color {
-  width: 12px;
-  height: 12px;
-  border-radius: 2px;
-}
-
-.legend-color.current {
-  background-color: #007AFF;
-}
-
-.legend-color.compare {
-  background-color: #FF9900;
-}
-
-.legend-text {
-  color: #666666;
-  font-size: 12px;
-}
-
-/* 指标网格 */
-.metrics-grid {
+.type-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
 }
 
-.metric-card {
-  background-color: #ffffff;
-  border-radius: 8px;
-  padding: 16px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-}
-
-.metric-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.metric-name {
-  color: #333333;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.metric-unit {
-  color: #999999;
-  font-size: 12px;
-}
-
-.metric-values {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-
-.current-value,
-.compare-value {
+.type-card {
+  background-color: #FFFFFF;
+  border: 1px solid #F0F0F0;
+  padding: 0.75rem;
+  border-radius: 0.375rem;
   text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-.value-number {
-  display: block;
+.type-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.type-card.good {
+  border-color: #22C55E;
+  background-color: #F0FDF4;
+}
+
+.type-card.warning {
+  border-color: #F59E0B;
+  background-color: #FFFBEB;
+}
+
+.type-card.normal {
+  border-color: #6B7280;
+  background-color: #F9FAFB;
+}
+
+.type-card.attention {
+  border-color: #EF4444;
+  background-color: #FEF2F2;
+}
+
+.type-label {
   color: #333333;
-  font-size: 16px;
-  font-weight: 700;
-  margin-bottom: 2px;
+  font-size: 0.75rem;
+  margin-bottom: 0.25rem;
 }
 
-.value-label {
-  color: #666666;
-  font-size: 11px;
-}
-
-.metric-change {
-  text-align: center;
-}
-
-.change-value {
-  display: block;
-  font-size: 14px;
-  font-weight: 600;
-  margin-bottom: 2px;
-}
-
-.change-positive {
-  color: #00b42a;
-}
-
-.change-negative {
-  color: #f53f3f;
-}
-
-.change-neutral {
-  color: #666666;
-}
-
-.change-label {
-  color: #666666;
-  font-size: 11px;
-}
-
-/* 业绩图表 */
-.performance-charts {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
-  margin-bottom: 24px;
-}
-
-.chart-card {
-  background-color: #ffffff;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-}
-
-.chart-title {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.chart-title h3 {
+.type-count {
   color: #333333;
-  font-size: 16px;
+  font-size: 1.25rem;
   font-weight: 600;
-  margin: 0;
+  margin-bottom: 0.25rem;
 }
 
-.chart-period {
-  color: #999999;
-  font-size: 12px;
+.type-desc {
+  color: #666666;
+  font-size: 0.6875rem;
 }
 
-.chart-content {
+/* 行动按钮 */
+.action-buttons {
   display: flex;
+  gap: 0.75rem;
   justify-content: center;
 }
 
-.trend-chart {
-  max-width: 100%;
-  height: auto;
-}
-
-/* 客户分析明细 */
-.customer-analysis {
-  background-color: #ffffff;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-}
-
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.section-title {
-  color: #333333;
-  font-size: 16px;
-  font-weight: 600;
-  margin: 0;
-}
-
-.detail-btn {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: none;
+.action-btn {
+  background-color: #4A90E2;
   border: none;
-  color: #007AFF;
-  font-size: 14px;
+  border-radius: 0.375rem;
+  color: #FFFFFF;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0.75rem 1.5rem;
   cursor: pointer;
-  transition: color 0.2s;
+  transition: background-color 0.2s;
+  flex: 1;
+  max-width: 200px;
 }
 
-.detail-btn:hover {
-  color: #0056d6;
+.action-btn:hover {
+  background-color: #3B7DD8;
 }
 
-.detail-arrow {
-  transition: transform 0.3s;
-}
-
-.detail-arrow.open {
-  transform: rotate(180deg);
-}
-
-.customer-detail {
-  animation: slideDown 0.3s ease-out;
-}
-
-.detail-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 16px;
-}
-
-.detail-item {
-  text-align: center;
-  padding: 12px;
-  background-color: #f8f9fa;
-  border-radius: 8px;
-}
-
-.detail-label {
-  display: block;
-  color: #666666;
-  font-size: 12px;
-  margin-bottom: 4px;
-}
-
-.detail-value {
-  display: block;
-  color: #333333;
-  font-size: 16px;
-  font-weight: 600;
-}
-
-/* 时间选择弹窗 */
-.time-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.3);
-  z-index: 2000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-
-.time-modal {
-  background-color: #ffffff;
-  border-radius: 12px;
-  width: 100%;
-  max-width: 400px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-}
-
-.time-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 20px;
-  border-bottom: 1px solid #eaeaea;
-}
-
-.time-header h3 {
-  margin: 0;
-  color: #333333;
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.time-close {
-  background: none;
-  border: none;
-  color: #999999;
-  font-size: 20px;
-  cursor: pointer;
-  padding: 4px;
-}
-
-.time-content {
-  padding: 16px 20px;
-}
-
-.time-options {
+/* 铺市分析 - 行动按钮 */
+.market-actions {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 1rem;
 }
 
-.time-option-btn {
-  background: none;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
-  color: #333333;
-  font-size: 14px;
-  padding: 10px 16px;
+.market-action-btn {
+  background-color: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 0.5rem;
+  padding: 1rem;
   cursor: pointer;
   transition: all 0.2s;
   text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
-.time-option-btn:hover {
-  border-color: #007AFF;
-  background-color: #f8fbff;
+.market-action-btn:hover {
+  border-color: #4A90E2;
+  background-color: #F8FAFF;
 }
 
-.time-option-btn.active {
-  background-color: #007AFF;
-  border-color: #007AFF;
-  color: #ffffff;
+.action-icon {
+  font-size: 1.5rem;
+  width: 2rem;
+  text-align: center;
 }
 
-/* 指标说明弹窗 */
-.indicator-overlay {
+.action-text {
+  color: #333333;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.action-desc {
+  color: #666666;
+  font-size: 0.75rem;
+}
+
+/* 利润分析 - 数据网格 */
+.profit-data-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.profit-card {
+  background-color: #FFFFFF;
+  border: 1px solid #F0F0F0;
+  padding: 1rem;
+  border-radius: 0.375rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.profit-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(74, 144, 226, 0.2);
+  border-color: #4A90E2;
+}
+
+.profit-card.highlight {
+  border-color: #4A90E2;
+  background-color: #F8FAFF;
+}
+
+.card-value.negative {
+  color: #EF4444;
+}
+
+.card-change {
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-top: 0.25rem;
+}
+
+.card-change.positive {
+  color: #22C55E;
+}
+
+.card-change.negative {
+  color: #EF4444;
+}
+
+.card-change.highlight {
+  color: #4A90E2;
+  font-weight: 600;
+}
+
+/* 员工利润列表 */
+.employee-profit-list {
+  background-color: #FFFFFF;
+  border: 1px solid #F0F0F0;
+  border-radius: 0.5rem;
+}
+
+.list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  border-bottom: 1px solid #F0F0F0;
+}
+
+.list-title {
+  color: #333333;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.sort-options {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.sort-btn {
+  background: none;
+  border: 1px solid #E5E7EB;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.25rem;
+  color: #666666;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sort-btn:hover {
+  border-color: #4A90E2;
+  color: #4A90E2;
+}
+
+.sort-btn.active {
+  background-color: #4A90E2;
+  border-color: #4A90E2;
+  color: #FFFFFF;
+}
+
+.employee-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.employee-item {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid #F0F0F0;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  position: relative;
+}
+
+.employee-item:hover {
+  background-color: #F8F9FA;
+}
+
+.employee-item:last-child {
+  border-bottom: none;
+}
+
+.employee-info {
+  flex: 1;
+}
+
+.employee-name {
+  color: #333333;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.employee-role {
+  color: #666666;
+  font-size: 0.75rem;
+}
+
+.profit-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-right: 2rem;
+}
+
+.growth-rate,
+.change-value {
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.growth-rate.positive,
+.change-value.positive {
+  color: #22C55E;
+}
+
+.growth-rate.negative,
+.change-value.negative {
+  color: #EF4444;
+}
+
+.detail-arrow {
+  position: absolute;
+  right: 1rem;
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+.load-more-btn {
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 1rem;
+  color: #4A90E2;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.load-more-btn:hover {
+  background-color: #F8F9FA;
+}
+
+/* 弹窗样式 */
+.modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
-  z-index: 2000;
+  z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 5%;
+  box-sizing: border-box;
 }
 
+.date-modal,
 .indicator-modal {
-  background-color: #ffffff;
-  border-radius: 12px;
+  background-color: #FFFFFF;
+  border-radius: 0.75rem;
   width: 100%;
-  max-width: 500px;
+  max-width: 25rem;
   max-height: 80vh;
-  overflow: hidden;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  overflow-y: auto;
+  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.2);
 }
 
-.indicator-header {
+.modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
-  border-bottom: 1px solid #eaeaea;
+  padding: 1.25rem;
+  border-bottom: 1px solid #F4F4F4;
 }
 
-.indicator-header h3 {
+.modal-header h3 {
   margin: 0;
   color: #333333;
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 600;
 }
 
-.indicator-close {
+.close-btn {
   background: none;
   border: none;
   color: #999999;
-  font-size: 20px;
+  font-size: 1.25rem;
   cursor: pointer;
-  padding: 4px;
+  width: 1.875rem;
+  height: 1.875rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.close-btn:hover {
+  background-color: #F4F4F4;
+}
+
+.date-options {
+  padding: 1.25rem;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+.date-option {
+  background: none;
+  border: 1px solid #F4F4F4;
+  padding: 0.75rem 1rem;
+  border-radius: 0.375rem;
+  color: #333333;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-height: 2.5rem;
+}
+
+.date-option:hover {
+  border-color: #4A90E2;
+  background-color: rgba(74, 144, 226, 0.1);
+}
+
+.date-option.active {
+  border-color: #4A90E2;
+  background-color: rgba(74, 144, 226, 0.1);
+  color: #4A90E2;
 }
 
 .indicator-content {
-  padding: 16px 20px;
-  max-height: 400px;
-  overflow-y: auto;
+  padding: 1.25rem;
 }
 
 .indicator-item {
-  margin-bottom: 20px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 1rem;
+  color: #333333;
+  font-size: 0.875rem;
+  line-height: 1.5;
 }
 
 .indicator-item:last-child {
   margin-bottom: 0;
-  padding-bottom: 0;
-  border-bottom: none;
 }
 
-.indicator-name {
-  color: #333333;
-  font-size: 16px;
+.indicator-item .highlight {
+  color: #4A90E2;
   font-weight: 600;
-  margin-bottom: 8px;
 }
 
-.indicator-formula {
-  color: #007AFF;
-  font-size: 14px;
-  font-weight: 500;
-  background-color: #f0f8ff;
-  padding: 6px 10px;
-  border-radius: 4px;
-  margin-bottom: 8px;
-  font-family: 'Monaco', 'Consolas', monospace;
+.indicator-item ul {
+  margin: 0.5rem 0;
+  padding-left: 1rem;
 }
 
-.indicator-description {
-  color: #666666;
-  font-size: 14px;
-  line-height: 1.5;
+.indicator-item li {
+  margin-bottom: 0.25rem;
 }
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-  .time-filter-section {
-    padding: 12px;
+  .header-bar {
+    padding: 0.5rem;
   }
   
-  .time-group {
+  .page-title {
+    font-size: 1rem;
+    padding: 0 0.5rem;
+  }
+  
+  .dimension-tabs {
+    padding: 0 0.5rem;
+  }
+  
+  .tab-item {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+  }
+  
+  .main-content {
+    padding: 0.75rem;
+  }
+  
+  .data-cards,
+  .core-data-cards,
+  .type-grid,
+  .profit-data-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  
+  .action-buttons {
     flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
   }
   
-  .time-picker {
+  .action-btn {
     max-width: none;
   }
   
-  .metrics-grid {
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 12px;
+  .profit-metrics {
+    margin-right: 1rem;
   }
   
-  .performance-charts {
-    grid-template-columns: 1fr;
-  }
-  
-  .detail-grid {
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 12px;
+  .employee-item {
+    padding: 0.75rem;
   }
 }
 
 @media (max-width: 480px) {
-  .analysis-section {
-    padding: 12px;
+  .date-text {
+    font-size: 0.75rem;
   }
   
-  .employee-tabs {
-    gap: 6px;
+  .module-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
   }
   
-  .employee-tab {
-    padding: 6px 12px;
-    font-size: 13px;
+  .compare-toggle {
+    align-self: flex-end;
   }
-}
-
-/* 动画效果 */
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    max-height: 0;
+  
+  .sort-options {
+    flex-direction: column;
+    gap: 0.25rem;
   }
-  to {
-    opacity: 1;
-    max-height: 200px;
+  
+  .list-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
   }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.time-overlay,
-.indicator-overlay {
-  animation: fadeIn 0.2s ease-out;
-}
-
-.time-modal,
-.indicator-modal {
-  animation: slideUp 0.3s ease-out;
 }
 </style>

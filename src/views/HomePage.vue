@@ -553,7 +553,7 @@ export default {
       allFunctionsList: [
         { id: 1, name: '员工月报', icon: '👥', route: 'employee-report', selected: true },
         { id: 2, name: '业绩变化分析', icon: '📊', route: 'performance-analysis', selected: true },
-        { id: 3, name: '电视大屏', icon: '📺', route: 'employee-performance', selected: true },
+        { id: 3, name: '员工整体分析', icon: '�', route: 'employee-analysis', selected: true },
         { id: 4, name: '目标管理', icon: '🎯', route: 'goal-management', selected: true },
         { id: 5, name: '我的经营月报', icon: '�', route: 'monthly-report', selected: true },
         { id: 6, name: '铺市分析', icon: '🏪', route: 'market-analysis', selected: true },
