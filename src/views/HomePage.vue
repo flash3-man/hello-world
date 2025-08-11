@@ -556,7 +556,7 @@ export default {
         { id: 3, name: '电视大屏', icon: '📺', route: 'employee-performance', selected: true },
         { id: 4, name: '目标管理', icon: '🎯', route: 'goal-management', selected: true },
         { id: 5, name: '我的经营月报', icon: '�', route: 'monthly-report', selected: true },
-        { id: 6, name: '综合日报', icon: '📋', route: 'employee-performance', selected: true },
+        { id: 6, name: '铺市分析', icon: '🏪', route: 'market-analysis', selected: true },
         { id: 7, name: '员工业绩汇总', icon: '📈', route: 'employee-performance', selected: true },
         { id: 8, name: '客户销退汇总', icon: '🔄', route: 'employee-performance', selected: true },
         { id: 9, name: '客户管理', icon: '👤', route: 'customer-management', selected: false },
