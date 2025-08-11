@@ -17,23 +17,12 @@
       </button>
     </div>
 
-    <!-- 标签切换栏 -->
-    <div class="tab-section">
-      <div class="tab-container">
-        <button 
-          v-for="tab in tabs" 
-          :key="tab.id"
-          :class="['tab-btn', { active: selectedTab === tab.id }]"
-          @click="selectTab(tab.id)"
-        >
-          {{ tab.name }}
-        </button>
+    <!-- 日期与筛选栏 -->
+    <div class="date-filter-bar">
+      <div class="date-section">
+        <span class="current-date">{{ currentDate }}</span>
       </div>
-    </div>
-
-    <!-- 筛选控制栏 -->
-    <div class="filter-control-section">
-      <div class="filter-controls">
+      <div class="filter-section">
         <div class="filter-item" @click="openNameFilter">
           <span class="filter-label">目标名称</span>
           <span class="filter-value">{{ nameFilterDisplay }}</span>
@@ -52,6 +41,20 @@
         
         <button class="advanced-filter-btn" @click="openAdvancedFilter">
           筛选
+        </button>
+      </div>
+    </div>
+
+    <!-- 标签切换栏 -->
+    <div class="tab-section">
+      <div class="tab-container">
+        <button 
+          v-for="tab in tabs" 
+          :key="tab.id"
+          :class="['tab-btn', { active: selectedTab === tab.id }]"
+          @click="selectTab(tab.id)"
+        >
+          {{ tab.name }}
         </button>
       </div>
     </div>
@@ -454,6 +457,17 @@ export default {
   },
   
   computed: {
+    // 当前日期
+    currentDate() {
+      const now = new Date()
+      const year = now.getFullYear()
+      const month = String(now.getMonth() + 1).padStart(2, '0')
+      const day = String(now.getDate()).padStart(2, '0')
+      const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+      const weekday = weekdays[now.getDay()]
+      return `${year}-${month}-${day} ${weekday}`
+    },
+    
     // 筛选后的目标
     filteredGoals() {
       let filtered = this.goals
@@ -754,6 +768,88 @@ export default {
   font-weight: 500;
 }
 
+/* 日期与筛选栏 */
+.date-filter-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.date-section {
+  display: flex;
+  align-items: center;
+}
+
+.current-date {
+  color: #333333;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 6px 12px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+}
+
+.filter-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-section .filter-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  min-width: 80px;
+}
+
+.filter-section .filter-item:hover {
+  background-color: #e9ecef;
+}
+
+.filter-section .filter-label {
+  color: #333333;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.filter-section .filter-value {
+  color: #666666;
+  font-size: 13px;
+  margin-left: auto;
+}
+
+.filter-section .filter-arrow {
+  stroke: #999999;
+  stroke-width: 1.5;
+  fill: none;
+  transition: transform 0.3s ease;
+}
+
+.filter-section .advanced-filter-btn {
+  background-color: #007AFF;
+  border: none;
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.filter-section .advanced-filter-btn:hover {
+  background-color: #0056d6;
+}
+
 /* 标签切换栏 */
 .tab-section {
   background-color: #ffffff;
@@ -787,71 +883,6 @@ export default {
 
 .tab-btn:hover {
   color: #007AFF;
-}
-
-/* 筛选控制栏 */
-.filter-control-section {
-  background-color: #ffffff;
-  padding: 12px 16px;
-  border-bottom: 1px solid #eaeaea;
-}
-
-.filter-controls {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.filter-item {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 8px 12px;
-  background-color: #f8f9fa;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  flex: 1;
-}
-
-.filter-item:hover {
-  background-color: #e9ecef;
-}
-
-.filter-label {
-  color: #333333;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.filter-value {
-  color: #666666;
-  font-size: 14px;
-  margin-left: auto;
-}
-
-.filter-arrow {
-  stroke: #999999;
-  stroke-width: 1.5;
-  fill: none;
-  transition: transform 0.3s ease;
-}
-
-.advanced-filter-btn {
-  background-color: #007AFF;
-  border: none;
-  border-radius: 6px;
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 500;
-  padding: 8px 16px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  white-space: nowrap;
-}
-
-.advanced-filter-btn:hover {
-  background-color: #0056d6;
 }
 
 /* 目标列表区 */
@@ -1461,13 +1492,43 @@ export default {
     font-size: 14px;
   }
   
-  .metric-group {
-    grid-template-columns: 1fr;
-    gap: 8px;
+  .export-text {
+    display: none; /* 隐藏"导出"文字，只保留图标 */
   }
   
-  .filter-controls {
-    flex-direction: column;
+  .date-filter-bar {
+    padding: 8px 16px; /* 减少内边距 */
+  }
+  
+  .current-date {
+    font-size: 12px;
+    padding: 4px 8px; /* 减少日期的内边距 */
+  }
+  
+  .filter-section {
+    gap: 6px; /* 减少筛选项之间的间距 */
+  }
+  
+  .filter-section .filter-item {
+    padding: 4px 6px; /* 减少筛选项的内边距 */
+    min-width: 60px;
+  }
+  
+  .filter-section .filter-label {
+    font-size: 12px;
+  }
+  
+  .filter-section .filter-value {
+    font-size: 12px;
+  }
+  
+  .filter-section .advanced-filter-btn {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  
+  .metric-group {
+    grid-template-columns: 1fr;
     gap: 8px;
   }
   
@@ -1478,7 +1539,42 @@ export default {
 
 @media (max-width: 360px) {
   .header-bar {
-    padding: 10px 12px;
+    padding: 8px 12px;
+  }
+  
+  .page-title {
+    font-size: 15px;
+  }
+  
+  .date-filter-bar {
+    padding: 6px 12px;
+  }
+  
+  .current-date {
+    font-size: 11px;
+    padding: 3px 6px;
+  }
+  
+  .filter-section {
+    gap: 4px;
+  }
+  
+  .filter-section .filter-item {
+    padding: 3px 4px;
+    min-width: 50px;
+  }
+  
+  .filter-section .filter-label {
+    font-size: 11px;
+  }
+  
+  .filter-section .filter-value {
+    font-size: 11px;
+  }
+  
+  .filter-section .advanced-filter-btn {
+    padding: 3px 6px;
+    font-size: 11px;
   }
   
   .goals-list-section {
@@ -1491,6 +1587,44 @@ export default {
   
   .bottom-actions {
     padding: 12px;
+  }
+}
+
+@media (max-width: 320px) {
+  .page-title {
+    font-size: 14px;
+  }
+  
+  .current-date {
+    font-size: 10px;
+    padding: 2px 4px;
+  }
+  
+  .filter-section .filter-item {
+    padding: 2px 3px;
+    min-width: 45px;
+  }
+  
+  .filter-section .filter-label {
+    font-size: 10px;
+  }
+  
+  .filter-section .filter-value {
+    font-size: 10px;
+  }
+  
+  .filter-section .advanced-filter-btn {
+    padding: 2px 4px;
+    font-size: 10px;
+  }
+  
+  /* 在极小屏幕上隐藏筛选项的值，只显示标签 */
+  .filter-section .filter-value {
+    display: none;
+  }
+  
+  .filter-section .filter-arrow {
+    display: none;
   }
 }
 

@@ -1,32 +1,42 @@
 <template>
   <div class="customer-return">
-    <!-- 顶部操作区 -->
-    <div class="top-operation-bar">
-      <!-- 左侧：返回按钮 + 标题 -->
-      <div class="top-left">
-        <button class="back-arrow" @click="goBack">
-          <svg class="arrow-icon" width="20" height="20" viewBox="0 0 20 20">
-            <path d="M12 16L6 10L12 4" stroke="#333333" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
-        <h1 class="page-title">客户销售/退货汇总表</h1>
-      </div>
-      
-      <!-- 中间：日期选择 -->
-      <div class="top-center">
+    <!-- 顶部标题栏 -->
+    <div class="header-bar">
+      <button class="back-arrow" @click="goBack">
+        <svg class="arrow-icon" width="20" height="20" viewBox="0 0 20 20">
+          <path d="M12 16L6 10L12 4" stroke="#333333" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <h1 class="page-title">客户销售/退货汇总表</h1>
+      <button class="export-btn" @click="exportData">导出</button>
+    </div>
+
+    <!-- 日期与筛选栏 -->
+    <div class="date-filter-bar">
+      <div class="date-section">
         <div class="date-range" @click="showDatePicker">
           <span class="date-text">{{ currentDateRange }}</span>
         </div>
       </div>
-      
-      <!-- 右侧：操作按钮 -->
-      <div class="top-right">
-        <button class="export-btn" @click="exportData">导出</button>
-        <button class="filter-btn" @click="showFilterPanel">
-          <span class="filter-text">筛选</span>
-          <svg class="funnel-icon" width="14" height="14" viewBox="0 0 14 14">
-            <path d="M1 1H13L8.5 7V12L5.5 10V7L1 1Z" stroke="#999999" stroke-width="1" fill="none"/>
+      <div class="filter-section">
+        <div class="filter-item" @click="showCustomerNameFilter">
+          <span class="filter-label">客户名称</span>
+          <span class="filter-value">{{ customerNameFilterDisplay }}</span>
+          <svg class="filter-arrow" width="12" height="8" viewBox="0 0 12 8">
+            <path d="M1 1L6 6L11 1"/>
           </svg>
+        </div>
+        
+        <div class="filter-item" @click="showCustomerTypeFilter">
+          <span class="filter-label">客户类型</span>
+          <span class="filter-value">{{ customerTypeFilterDisplay }}</span>
+          <svg class="filter-arrow" width="12" height="8" viewBox="0 0 12 8">
+            <path d="M1 1L6 6L11 1"/>
+          </svg>
+        </div>
+        
+        <button class="advanced-filter-btn" @click="showFilterPanel">
+          筛选
         </button>
       </div>
     </div>
@@ -368,6 +378,11 @@ export default {
       showIndicator: false,
       selectedDateOption: 'current',
       selectedTypes: [],
+      
+      // 新增筛选状态
+      customerNameFilter: '',
+      customerTypeFilter: '',
+      
       amountRange: {
         min: '',
         max: ''
@@ -506,6 +521,23 @@ export default {
   },
   
   computed: {
+    // 客户名称筛选显示文本
+    customerNameFilterDisplay() {
+      return this.customerNameFilter || '全部客户'
+    },
+    
+    // 客户类型筛选显示文本
+    customerTypeFilterDisplay() {
+      const typeMap = {
+        'A': 'A类客户',
+        'B': 'B类客户', 
+        'C': 'C类客户',
+        'new': '新客户',
+        'risk': '风险客户'
+      }
+      return this.customerTypeFilter ? typeMap[this.customerTypeFilter] : '全部类型'
+    },
+    
     // 排序后的客户数据
     sortedCustomerData() {
       let data = [...this.customerData]
@@ -714,6 +746,35 @@ export default {
     showFilterPanel() {
       this.showFilter = true
     },
+    
+    // 打开客户名称筛选
+    showCustomerNameFilter() {
+      const name = prompt('请输入客户名称关键词：', this.customerNameFilter)
+      if (name !== null) {
+        this.customerNameFilter = name
+      }
+    },
+    
+    // 打开客户类型筛选
+    showCustomerTypeFilter() {
+      // 简化实现，实际项目中可以实现更复杂的选择器
+      const types = ['', 'A', 'B', 'C', 'new', 'risk']
+      const typeLabels = ['全部类型', 'A类客户', 'B类客户', 'C类客户', '新客户', '风险客户']
+      
+      let message = '请选择客户类型：\n'
+      types.forEach((type, index) => {
+        message += `${index}. ${typeLabels[index]}\n`
+      })
+      
+      const selection = prompt(message + '\n请输入对应数字：')
+      if (selection !== null && !isNaN(selection)) {
+        const index = parseInt(selection)
+        if (index >= 0 && index < types.length) {
+          this.customerTypeFilter = types[index]
+        }
+      }
+    },
+    
     showIndicatorModal() {
       this.showIndicator = true
     },
@@ -743,8 +804,8 @@ export default {
   flex-direction: column;
 }
 
-/* 顶部操作区 - 重新设计 */
-.top-operation-bar {
+/* 顶部标题栏 - 第一行：标题 + 导出 */
+.header-bar {
   width: 100%;
   min-height: 3.5rem;
   display: flex;
@@ -759,25 +820,79 @@ export default {
   box-sizing: border-box;
 }
 
-.top-left {
+/* 日期与筛选栏 - 第二行：日期 + 筛选 */
+.date-filter-bar {
+  width: 100%;
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 0.75rem;
-  flex: 1;
+  padding: 0.75rem 1rem;
+  background-color: #FFFFFF;
+  border-bottom: 1px solid #F0F0F0;
+  box-sizing: border-box;
 }
 
-.top-center {
-  display: flex;
-  justify-content: center;
-  flex: 1;
-}
-
-.top-right {
+.date-section {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 0.75rem;
-  flex: 1;
+}
+
+.filter-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-section .filter-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  min-width: 80px;
+}
+
+.filter-section .filter-item:hover {
+  background-color: #e9ecef;
+}
+
+.filter-section .filter-label {
+  color: #333333;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.filter-section .filter-value {
+  color: #666666;
+  font-size: 13px;
+  margin-left: auto;
+}
+
+.filter-section .filter-arrow {
+  stroke: #999999;
+  stroke-width: 1.5;
+  fill: none;
+  transition: transform 0.3s ease;
+}
+
+.filter-section .advanced-filter-btn {
+  background-color: #007AFF;
+  border: none;
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.filter-section .advanced-filter-btn:hover {
+  background-color: #0056d6;
 }
 
 /* 返回按钮 */
@@ -789,6 +904,9 @@ export default {
   border-radius: 0.375rem;
   transition: background-color 0.2s;
   touch-action: manipulation;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .back-arrow:hover {
@@ -807,7 +925,9 @@ export default {
   font-size: 1.125rem;
   font-weight: 600;
   margin: 0;
-  white-space: nowrap;
+  flex: 1;
+  text-align: center;
+  padding: 0 1rem;
 }
 
 /* 日期筛选 */
@@ -831,6 +951,32 @@ export default {
   font-size: 0.875rem;
   font-weight: 500;
   white-space: nowrap;
+}
+
+/* 按钮样式统一 */
+.export-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+  touch-action: manipulation;
+  background: #3B82F6;
+  color: white;
+  border-color: #3B82F6;
+}
+
+.export-btn:hover {
+  background: #2563EB;
+  border-color: #2563EB;
+}
+
+.funnel-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+  flex-shrink: 0;
 }
 
 /* 统计信息条 */
@@ -868,44 +1014,6 @@ export default {
   padding: 0.25rem 0.5rem;
   border-radius: 0.375rem;
   border: 1px solid #FECACA;
-}
-
-/* 按钮样式统一 */
-.export-btn,
-.filter-btn {
-  padding: 0.5rem 1rem;
-  border-radius: 0.375rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: 1px solid transparent;
-  touch-action: manipulation;
-}
-
-.export-btn {
-  background: #3B82F6;
-  color: white;
-  border-color: #3B82F6;
-}
-
-.export-btn:hover {
-  background: #2563EB;
-  border-color: #2563EB;
-}
-
-.filter-btn {
-  background: #F9FAFB;
-  color: #374151;
-  border-color: #D1D5DB;
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-}
-
-.filter-btn:hover {
-  background: #F3F4F6;
-  border-color: #9CA3AF;
 }
 
 /* 数据统计摘要样式 */
@@ -963,38 +1071,6 @@ export default {
 .update-time,
 .data-source {
   font-weight: 500;
-}
-
-/* 筛选按钮 (导出按钮右侧：right: 2%) */
-.filter-btn {
-  background: none;
-  border: none;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 0.25rem;
-  transition: background-color 0.2s;
-  min-height: 2rem;
-  /* 点击热区优化 */
-  touch-action: manipulation;
-}
-
-.filter-btn:hover {
-  background-color: #F4F4F4;
-}
-
-.filter-text {
-  color: #999999;
-  font-size: 0.875rem;
-  white-space: nowrap;
-}
-
-.funnel-icon {
-  width: 0.875rem;
-  height: 0.875rem;
-  flex-shrink: 0;
 }
 
 /* 指标说明区 (流式布局，占比屏幕宽度100%) */
@@ -1064,7 +1140,7 @@ export default {
   background-color: #F4F4F4;
   display: flex;
   align-items: center;
-  padding: 0.75rem 2%;
+  padding: 0.75rem 1rem;
   border-bottom: 1px solid #F4F4F4;
   box-sizing: border-box;
 }
@@ -1079,19 +1155,31 @@ export default {
 /* 字段宽度分配 (flex比例) */
 .header-cell.customer-name,
 .row-cell.customer-name {
-  flex: 4; /* 占40% */
+  flex: 3; /* 客户名称适中宽度 */
   text-align: left;
   padding-left: 0.5rem;
+  padding-right: 0.5rem; /* 统一边距 */
 }
 
 .header-cell.order-amount,
-.header-cell.order-count,
-.header-cell.trend-data,
-.row-cell.order-amount,
-.row-cell.order-count,
-.row-cell.trend-data {
-  flex: 2; /* 各占20% */
+.row-cell.order-amount {
+  flex: 2.5; /* 订单金额稍宽，显示完整金额 */
   text-align: center;
+  padding: 0 0.5rem; /* 统一边距 */
+}
+
+.header-cell.order-count,
+.row-cell.order-count {
+  flex: 2.2; /* 订单单数稍宽，避免内容换行 */
+  text-align: center;
+  padding: 0 0.5rem; /* 统一边距 */
+}
+
+.header-cell.trend-data,
+.row-cell.trend-data {
+  flex: 2.3; /* 环比/风险适中，显示完整信息 */
+  text-align: center;
+  padding: 0 0.5rem; /* 统一边距 */
 }
 
 /* 数据行 (响应式适配所有设备) */
@@ -1106,7 +1194,7 @@ export default {
   min-height: 3.125rem; /* 50px转换为rem */
   display: flex;
   align-items: center;
-  padding: 0.5rem 2%;
+  padding: 0.5rem 1rem;
   border-bottom: 1px solid #F4F4F4;
   cursor: pointer;
   transition: background-color 0.2s;
@@ -1140,9 +1228,10 @@ export default {
 
 /* 响应式字段宽度分配 */
 .row-cell.customer-name {
-  flex: 4; /* 占40% */
+  flex: 3; /* 客户名称适中宽度 */
   text-align: left;
   padding-left: 0.5rem;
+  padding-right: 0.5rem; /* 统一边距 */
   font-weight: 500;
   /* 长文本适配 */
   word-break: break-word;
@@ -1150,22 +1239,29 @@ export default {
 }
 
 .row-cell.order-amount {
-  flex: 2; /* 占20% */
+  flex: 2.5; /* 订单金额稍宽 */
   text-align: center;
+  padding: 0 0.5rem; /* 统一边距 */
   /* 带千位分隔符 */
   font-weight: 500;
 }
 
-.row-cell.order-count,
-.row-cell.trend-data {
-  flex: 2; /* 各占20% */
+.row-cell.order-count {
+  flex: 2.2; /* 订单单数稍宽，避免内容换行 */
   text-align: center;
+  padding: 0 0.5rem; /* 统一边距 */
 }
 
-/* 箭头图标 (右对齐：padding-right: 2%) */
+.row-cell.trend-data {
+  flex: 2.3; /* 环比/风险适中 */
+  text-align: center;
+  padding: 0 0.5rem; /* 统一边距 */
+}
+
+/* 箭头图标 (右侧固定位置) */
 .detail-arrow {
   position: absolute;
-  right: 2%;
+  right: 1rem;
   width: 1rem;
   height: 1rem;
   flex-shrink: 0;
@@ -1220,16 +1316,19 @@ export default {
   flex-direction: column;
   gap: 0.25rem;
   align-items: center;
+  min-width: 80px; /* 确保最小宽度，避免内容挤压 */
 }
 
 .count-number {
   font-weight: 600;
   color: #111827;
+  white-space: nowrap; /* 防止数字换行 */
 }
 
 .item-count {
   font-size: 0.75rem;
   color: #6B7280;
+  white-space: nowrap; /* 防止品项信息换行 */
 }
 
 .last-order-info {
@@ -1238,16 +1337,19 @@ export default {
   gap: 0.0625rem;
   margin-top: 0.125rem;
   align-items: center;
+  min-width: 100%; /* 确保日期信息有足够空间 */
 }
 
 .last-date {
   font-size: 0.6875rem;
   color: #374151;
+  white-space: nowrap; /* 防止日期换行 */
 }
 
 .date-diff {
   font-size: 0.625rem;
   color: #9CA3AF;
+  white-space: nowrap; /* 防止时间差换行 */
 }
 
 .trend-container {
@@ -1376,34 +1478,36 @@ export default {
 
 /* 手机端 (320-480px 宽) */
 @media (max-width: 480px) {
-  .top-operation-bar {
+  .header-bar {
     padding: 0.5rem;
     min-height: 3rem;
+  }
+  
+  .date-filter-bar {
+    padding: 0.5rem;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.75rem;
+    align-items: stretch;
   }
   
-  .top-left,
-  .top-center,
-  .top-right {
-    flex: none;
-    width: 100%;
-  }
-  
-  .top-left {
-    justify-content: flex-start;
-  }
-  
-  .top-center {
+  .date-section,
+  .filter-section {
     justify-content: center;
   }
   
-  .top-right {
-    justify-content: flex-end;
+  .filter-section {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .filter-section .filter-item {
+    flex: 1;
+    min-width: 70px;
   }
   
   .page-title {
     font-size: 1rem;
+    padding: 0 0.5rem;
   }
   
   .stats-bar {
@@ -1444,16 +1548,26 @@ export default {
   /* 字段宽度自动压缩，保证"客户名称"显示完整 */
   .header-cell.customer-name,
   .row-cell.customer-name {
-    flex: 3;
+    flex: 2.5; /* 手机端适度压缩 */
+    padding: 0 0.3rem; /* 手机端统一边距 */
   }
   
   .header-cell.order-amount,
+  .row-cell.order-amount {
+    flex: 2; /* 订单金额压缩 */
+    padding: 0 0.3rem;
+  }
+  
   .header-cell.order-count,
+  .row-cell.order-count {
+    flex: 1.8; /* 订单单数适度压缩，保持可读性 */
+    padding: 0 0.25rem;
+  }
+  
   .header-cell.trend-data,
-  .row-cell.order-amount,
-  .row-cell.order-count,
   .row-cell.trend-data {
-    flex: 1.5;
+    flex: 1.7; /* 环比/风险适度压缩 */
+    padding: 0 0.25rem;
   }
   
   .header-cell,
@@ -1476,7 +1590,11 @@ export default {
 
 /* 平板端 (768-1024px 宽) */
 @media (min-width: 768px) and (max-width: 1024px) {
-  .top-operation-bar {
+  .header-bar {
+    padding: 1rem 3%;
+  }
+  
+  .date-filter-bar {
     padding: 1rem 3%;
   }
   
@@ -1491,16 +1609,26 @@ export default {
   /* 字段宽度按比例扩展，显示更多数据列 */
   .header-cell.customer-name,
   .row-cell.customer-name {
-    flex: 4;
+    flex: 3;
+    padding: 0 0.5rem; /* 平板端统一边距 */
   }
   
   .header-cell.order-amount,
+  .row-cell.order-amount {
+    flex: 2.5;
+    padding: 0 0.5rem;
+  }
+  
   .header-cell.order-count,
+  .row-cell.order-count {
+    flex: 2.2;
+    padding: 0 0.5rem;
+  }
+  
   .header-cell.trend-data,
-  .row-cell.order-amount,
-  .row-cell.order-count,
   .row-cell.trend-data {
-    flex: 2;
+    flex: 2.3;
+    padding: 0 0.5rem;
   }
   
   .data-row {
@@ -1516,7 +1644,13 @@ export default {
 
 /* 桌面端 (1024px以上) */
 @media (min-width: 1024px) {
-  .top-operation-bar {
+  .header-bar {
+    padding: 1rem 5%;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .date-filter-bar {
     padding: 1rem 5%;
     max-width: 1200px;
     margin: 0 auto;
