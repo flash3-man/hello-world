@@ -11,6 +11,7 @@ import EmployeeDetailAnalysis from '@/views/EmployeeDetailAnalysis.vue'
 import CustomerAnalysis from '@/views/CustomerAnalysis.vue'
 import ProductAnalysis from '@/views/ProductAnalysis.vue'
 import CustomerReturn from '@/views/CustomerReturn.vue'
+import QuickAccessPage from '@/views/QuickAccessPage.vue'
 import TestTable from '@/views/TestTable.vue'
 import TestTableLayout from '@/views/TestTableLayout.vue'
 
@@ -74,6 +75,11 @@ const routes = [
     path: '/customer-return',
     name: 'CustomerReturn',
     component: CustomerReturn
+  },
+  {
+    path: '/quick-access',
+    name: 'QuickAccess',
+    component: QuickAccessPage
   },
   {
     path: '/test-table',

@@ -906,7 +906,8 @@ export default {
     },
     
     showAllFunctions() {
-      this.showFunctionConfig = true
+      // 跳转到快捷访问页面
+      this.$router.push('/quick-access')
     },
     
     // 拖拽排序功能
