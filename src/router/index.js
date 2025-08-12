@@ -7,6 +7,7 @@ import EmployeeReport from '@/views/EmployeeReport.vue'
 import MonthlyReport from '@/views/MonthlyReport.vue'
 import MarketAnalysis from '@/views/MarketAnalysis.vue'
 import EmployeeAnalysis from '@/views/EmployeeAnalysis.vue'
+import EmployeeDetailAnalysis from '@/views/EmployeeDetailAnalysis.vue'
 import CustomerAnalysis from '@/views/CustomerAnalysis.vue'
 import ProductAnalysis from '@/views/ProductAnalysis.vue'
 import CustomerReturn from '@/views/CustomerReturn.vue'
@@ -53,6 +54,11 @@ const routes = [
     path: '/employee-analysis',
     name: 'EmployeeAnalysis',
     component: EmployeeAnalysis
+  },
+  {
+    path: '/employee-detail-analysis',
+    name: 'EmployeeDetailAnalysis',
+    component: EmployeeDetailAnalysis
   },
   {
     path: '/customer-analysis',

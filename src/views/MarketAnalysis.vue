@@ -737,7 +737,7 @@ export default {
     // 跳转到员工数据分析
     goToEmployeeAnalysis(employee) {
       this.$router.push({
-        path: '/employee-analysis',
+        path: '/employee-detail-analysis',
         query: {
           employeeId: employee.id,
           employeeName: employee.name,
