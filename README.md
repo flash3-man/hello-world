@@ -1,24 +1,68 @@
-# hello-world
+# 超悦业务管理系统
 
-## Project setup
+> 基于Vue 3的现代化业务管理平台
+
+## 🚀 快速开始
+
+### 方式1：直接运行APP
+```bash
+# 双击启动脚本
+start-production.bat
+
+# 或者命令行启动
+python -m http.server 3000 --directory dist
 ```
+
+### 方式2：开发模式
+```bash
+# 安装依赖
 npm install
-```
 
-### Compiles and hot-reloads for development
-```
+# 启动开发服务器
 npm run serve
+
+# 访问 http://localhost:8080
 ```
 
-### Compiles and minifies for production
-```
-npm run build
-```
+### 方式3：PWA安装
+1. 浏览器访问 http://localhost:3000
+2. 点击地址栏的"安装"图标
+3. 安装后可在桌面启动
 
-### Lints and fixes files
-```
-npm run lint
-```
+## 📱 功能特性
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+### 核心模块
+- **📊 综合首页** - 业务数据总览和快速功能入口
+- **🎯 目标管理** - 三级目标拆解（公司→部门→员工）
+- **🏢 部门分析** - 智能筛选和多维度排序
+- **👥 员工管理** - 员工绩效分析和详细报表
+- **⚡ 快捷访问** - 功能聚合页面，支持自定义配置
+
+### 技术特性
+- **📱 PWA支持** - 可安装为原生APP
+- **🔄 离线缓存** - Service Worker支持离线访问
+- **📐 响应式设计** - 完美适配移动端和桌面端
+- **🎨 现代UI** - 基于现代设计语言的用户界面
+
+## 🛠️ 技术栈
+
+- **前端框架**: Vue 3
+- **路由管理**: Vue Router
+- **构建工具**: Vue CLI 5.0
+- **样式**: CSS3 + 响应式设计
+- **PWA**: Service Worker + Web App Manifest
+- **服务器**: Express.js / Python HTTP Server
+
+## 🎯 当前状态
+
+**✅ APP已成功打包并运行在 http://localhost:3000**
+
+- 📦 生产构建完成
+- 🌐 PWA功能已启用
+- 📱 支持安装为桌面/移动APP
+- 🔄 离线缓存已配置
+- 📐 响应式设计完美适配
+
+---
+
+**🎉 恭喜！您的超悦业务管理系统APP已经准备就绪！**

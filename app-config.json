@@ -1,0 +1,54 @@
+{
+  "app": {
+    "name": "超悦业务管理系统",
+    "version": "1.0.0",
+    "description": "基于Vue 3的现代化业务管理平台",
+    "author": "Augment Agent",
+    "homepage": "http://localhost:3000",
+    "icon": "./public/favicon.ico"
+  },
+  "build": {
+    "appId": "com.chaoyue.business",
+    "productName": "超悦业务管理系统",
+    "directories": {
+      "output": "app-dist"
+    },
+    "files": [
+      "dist/**/*",
+      "serve-dist.js",
+      "package.json",
+      "node_modules/express/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "dist",
+        "to": "dist"
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "./public/favicon.ico"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "./public/favicon.ico"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "./public/favicon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "超悦业务管理系统"
+    }
+  },
+  "scripts": {
+    "electron": "electron .",
+    "electron-dev": "electron . --dev",
+    "build-electron": "electron-builder",
+    "dist": "npm run build && electron-builder"
+  }
+}

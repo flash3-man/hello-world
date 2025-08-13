@@ -997,8 +997,8 @@ export default {
     },
     
     viewDepartmentPerformance(goalId) {
-      // 进入部门维度分解页
-      this.$router.push(`/department-performance/${goalId}`)
+      // 进入部门目标明细页
+      this.$router.push(`/department-goal-detail/${goalId}`)
     },
     
     viewEmployeePerformance(goalId) {

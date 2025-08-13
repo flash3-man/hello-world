@@ -12,6 +12,8 @@ import CustomerAnalysis from '@/views/CustomerAnalysis.vue'
 import ProductAnalysis from '@/views/ProductAnalysis.vue'
 import CustomerReturn from '@/views/CustomerReturn.vue'
 import QuickAccessPage from '@/views/QuickAccessPage.vue'
+import DepartmentGoalDetail from '@/views/DepartmentGoalDetail.vue'
+import EmployeeDynamics from '@/views/EmployeeDynamics.vue'
 import TestTable from '@/views/TestTable.vue'
 import TestTableLayout from '@/views/TestTableLayout.vue'
 
@@ -80,6 +82,16 @@ const routes = [
     path: '/quick-access',
     name: 'QuickAccess',
     component: QuickAccessPage
+  },
+  {
+    path: '/department-goal-detail/:goalId',
+    name: 'DepartmentGoalDetail',
+    component: DepartmentGoalDetail
+  },
+  {
+    path: '/employee-dynamics',
+    name: 'EmployeeDynamics',
+    component: EmployeeDynamics
   },
   {
     path: '/test-table',

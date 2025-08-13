@@ -2,6 +2,14 @@
 node_modules
 /dist
 
+# Electron build output
+app-dist/
+*.exe
+*.dmg
+*.AppImage
+*.deb
+*.rpm
+
 
 # local env files
 .env.local

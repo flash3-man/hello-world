@@ -5,7 +5,13 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <link rel="icon" href="<%= BASE_URL %>favicon.ico">
-    <title><%= htmlWebpackPlugin.options.title %></title>
+    <link rel="manifest" href="<%= BASE_URL %>manifest.json">
+    <meta name="theme-color" content="#4A90E2">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="超悦管理">
+    <link rel="apple-touch-icon" href="<%= BASE_URL %>favicon.ico">
+    <title>超悦业务管理系统</title>
   </head>
   <body>
     <noscript>
@@ -13,5 +19,58 @@
     </noscript>
     <div id="app"></div>
     <!-- built files will be auto injected -->
+
+    <script>
+      // 注册Service Worker
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+              console.log('SW registered: ', registration)
+            })
+            .catch((registrationError) => {
+              console.log('SW registration failed: ', registrationError)
+            })
+        })
+      }
+
+      // PWA安装提示
+      let deferredPrompt
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault()
+        deferredPrompt = e
+
+        // 显示安装按钮或提示
+        const installBtn = document.createElement('button')
+        installBtn.textContent = '安装APP'
+        installBtn.style.cssText = `
+          position: fixed;
+          bottom: 20px;
+          right: 20px;
+          background: #4A90E2;
+          color: white;
+          border: none;
+          padding: 12px 20px;
+          border-radius: 25px;
+          cursor: pointer;
+          box-shadow: 0 4px 12px rgba(74,144,226,0.3);
+          z-index: 1000;
+          font-size: 14px;
+        `
+
+        installBtn.addEventListener('click', () => {
+          deferredPrompt.prompt()
+          deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+              console.log('用户接受了安装')
+            }
+            deferredPrompt = null
+            installBtn.remove()
+          })
+        })
+
+        document.body.appendChild(installBtn)
+      })
+    </script>
   </body>
 </html>
