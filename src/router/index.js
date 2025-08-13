@@ -14,6 +14,7 @@ import CustomerReturn from '@/views/CustomerReturn.vue'
 import QuickAccessPage from '@/views/QuickAccessPage.vue'
 import DepartmentGoalDetail from '@/views/DepartmentGoalDetail.vue'
 import EmployeeDynamics from '@/views/EmployeeDynamics.vue'
+import VisitAnalysis from '@/views/VisitAnalysis.vue'
 import TestTable from '@/views/TestTable.vue'
 import TestTableLayout from '@/views/TestTableLayout.vue'
 
@@ -22,6 +23,11 @@ const routes = [
     path: '/',
     name: 'Home',
     component: HomePage
+  },
+  {
+    path: '/visit-analysis',
+    name: 'VisitAnalysis',
+    component: VisitAnalysis
   },
   {
     path: '/employee-performance',
