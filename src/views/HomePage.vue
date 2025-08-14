@@ -1016,8 +1016,8 @@ export default {
           this.refreshHomeData()
           break
         case 'focus':
-          // 进入关注列表页
-          this.$router.push('/focus-list')
+          // 进入关注分析页
+          this.$router.push('/focus-analysis')
           break
         case 'analysis':
           // 进入综合解读页
