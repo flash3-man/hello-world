@@ -971,7 +971,7 @@ export default {
 
     // === 目标追踪区相关 ===
     viewAllGoals() {
-      this.$router.push('/goals-overview')
+      this.$router.push('/goal-management')
     },
     
     viewGoalDetail(goalId) {

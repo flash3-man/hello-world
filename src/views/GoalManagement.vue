@@ -7,7 +7,14 @@
           <path d="M10 4L6 8L10 12"/>
         </svg>
       </button>
-      <h1 class="page-title">目标列表</h1>
+      <div class="title-section">
+        <h1 class="page-title">目标列表</h1>
+        <button class="video-player-btn" @click="playVideo">
+          <svg class="play-icon" width="16" height="16" viewBox="0 0 16 16">
+            <path d="M3 2L13 8L3 14V2Z" fill="currentColor"/>
+          </svg>
+        </button>
+      </div>
       <button class="export-btn" @click="exportData">
         <svg class="export-icon" width="16" height="16" viewBox="0 0 16 16">
           <path d="M8 10L12 6H9V1H7V6H4L8 10Z"/>
@@ -17,46 +24,46 @@
       </button>
     </div>
 
-    <!-- 日期与筛选栏 -->
-    <div class="date-filter-bar">
-      <div class="date-section">
-        <span class="current-date">{{ currentDate }}</span>
-      </div>
-      <div class="filter-section">
-        <div class="filter-item" @click="openNameFilter">
-          <span class="filter-label">目标名称</span>
-          <span class="filter-value">{{ nameFilterDisplay }}</span>
-          <svg class="filter-arrow" width="12" height="8" viewBox="0 0 12 8">
-            <path d="M1 1L6 6L11 1"/>
-          </svg>
-        </div>
-        
-        <div class="filter-item" @click="openStatusFilter">
-          <span class="filter-label">进行中</span>
-          <span class="filter-value">{{ statusFilterDisplay }}</span>
-          <svg class="filter-arrow" width="12" height="8" viewBox="0 0 12 8">
-            <path d="M1 1L6 6L11 1"/>
-          </svg>
-        </div>
-        
-        <button class="advanced-filter-btn" @click="openAdvancedFilter">
-          筛选
-        </button>
-      </div>
-    </div>
+
 
     <!-- 标签切换栏 -->
     <div class="tab-section">
       <div class="tab-container">
-        <button 
-          v-for="tab in tabs" 
+        <button
+          v-for="tab in tabs"
           :key="tab.id"
           :class="['tab-btn', { active: selectedTab === tab.id }]"
           @click="selectTab(tab.id)"
+          :title="tab.description"
         >
-          {{ tab.name }}
+          <span class="tab-name">{{ tab.name }}</span>
+          <span class="tab-count">({{ tabCounts[tab.id] }})</span>
         </button>
       </div>
+    </div>
+
+    <!-- 新的筛选行 -->
+    <div class="new-filter-bar">
+      <div class="new-filter-item" @click="openNameFilterBottomSheet">
+        <span class="filter-label">目标名称</span>
+        <span class="filter-value">{{ nameFilterDisplay }}</span>
+        <svg class="filter-arrow" width="12" height="8" viewBox="0 0 12 8">
+          <path d="M1 1L6 6L11 1"/>
+        </svg>
+      </div>
+
+      <div class="new-filter-item" @click="openStatusFilterBottomSheet">
+        <span class="filter-label">进行中</span>
+        <span class="filter-value">{{ statusFilterDisplay }}</span>
+        <svg class="filter-arrow" width="12" height="8" viewBox="0 0 12 8">
+          <path d="M1 1L6 6L11 1"/>
+        </svg>
+      </div>
+
+      <button class="new-filter-btn" @click="openAdvancedFilterBottomSheet" :class="{ 'has-filters': hasActiveFilters }">
+        筛选
+        <span v-if="hasActiveFilters" class="filter-indicator">●</span>
+      </button>
     </div>
 
     <!-- 目标列表区 -->
@@ -126,9 +133,15 @@
           
           <!-- 目标操作按钮 -->
           <div class="goal-actions">
-            <button 
-              v-if="goal.canModify" 
-              class="modify-btn" 
+            <button
+              class="department-performance-btn"
+              @click.stop="viewDepartmentPerformance(goal.id)"
+            >
+              看部门表现
+            </button>
+            <button
+              v-if="goal.canModify"
+              class="modify-btn"
               @click.stop="modifyGoal(goal.id)"
             >
               修改目标
@@ -143,74 +156,57 @@
       </div>
     </div>
 
-    <!-- 底部操作区 -->
-    <div class="bottom-actions">
-      <button class="performance-btn" @click="viewDepartmentPerformance">
-        看部门表现
-      </button>
-      <button class="performance-btn" @click="viewEmployeePerformance">
-        看员工表现
-      </button>
-    </div>
 
-    <!-- 高级筛选弹窗 -->
+
+    <!-- 筛选层弹窗 -->
     <div v-if="showAdvancedFilter" class="filter-overlay" @click="closeAdvancedFilter">
       <div class="filter-modal" @click.stop>
         <div class="filter-header">
-          <h3 class="filter-title">高级筛选</h3>
+          <h3 class="filter-title">筛选条件</h3>
           <button class="filter-close" @click="closeAdvancedFilter">×</button>
         </div>
-        
+
         <div class="filter-content">
-          <div class="filter-group">
-            <label class="filter-group-label">部门</label>
-            <select v-model="advancedFilters.department" class="filter-select">
-              <option value="">全部部门</option>
-              <option value="sales">销售部</option>
-              <option value="marketing">市场部</option>
-              <option value="operations">运营部</option>
-              <option value="finance">财务部</option>
-            </select>
+          <!-- 部门筛选 -->
+          <div class="filter-item" @click="openDepartmentSelector">
+            <div class="filter-item-label">部门</div>
+            <div class="filter-item-value">
+              <span class="filter-value-text">{{ departmentFilterDisplay }}</span>
+              <span class="filter-arrow">></span>
+            </div>
           </div>
-          
-          <div class="filter-group">
-            <label class="filter-group-label">目标进度状态</label>
-            <select v-model="advancedFilters.progressStatus" class="filter-select">
-              <option value="">全部状态</option>
-              <option value="not-started">未开始</option>
-              <option value="in-progress">进行中</option>
-              <option value="completed">已完成</option>
-              <option value="overdue">已逾期</option>
-            </select>
+
+          <!-- 目标进展状态筛选 -->
+          <div class="filter-item" @click="openStatusSelector">
+            <div class="filter-item-label">目标进展状态</div>
+            <div class="filter-item-value">
+              <span class="filter-value-text">{{ statusFilterDisplay }}</span>
+              <span class="filter-arrow">></span>
+            </div>
           </div>
-          
-          <div class="filter-group">
-            <label class="filter-group-label">目标指标</label>
-            <select v-model="advancedFilters.metric" class="filter-select">
-              <option value="">全部指标</option>
-              <option value="order-amount">订单金额</option>
-              <option value="sales-amount">销售金额</option>
-              <option value="sales-quantity">销售数量</option>
-              <option value="customer-count">客户数量</option>
-              <option value="market-share">市场占有率</option>
-            </select>
+
+          <!-- 目标指标筛选 -->
+          <div class="filter-item" @click="openMetricSelector">
+            <div class="filter-item-label">目标指标</div>
+            <div class="filter-item-value">
+              <span class="filter-value-text">{{ metricFilterDisplay }}</span>
+              <span class="filter-arrow">></span>
+            </div>
           </div>
-          
-          <div class="filter-group">
-            <label class="filter-group-label">排序方式</label>
-            <select v-model="advancedFilters.sortBy" class="filter-select">
-              <option value="completion-rate-asc">按完成率升序</option>
-              <option value="completion-rate-desc">按完成率降序</option>
-              <option value="target-amount-asc">按目标金额升序</option>
-              <option value="target-amount-desc">按目标金额降序</option>
-              <option value="deadline-asc">按截止日期升序</option>
-              <option value="deadline-desc">按截止日期降序</option>
-            </select>
+
+          <!-- 排序方式 -->
+          <div class="filter-item" @click="openSortSelector">
+            <div class="filter-item-label">排序方式</div>
+            <div class="filter-item-value">
+              <span class="filter-value-text">{{ sortFilterDisplay }}</span>
+              <span class="filter-arrow">></span>
+            </div>
           </div>
         </div>
-        
+
         <div class="filter-footer">
           <button class="filter-reset-btn" @click="resetAdvancedFilters">重置</button>
+          <button class="filter-clear-btn" @click="clearAllFilters">清空所有</button>
           <button class="filter-confirm-btn" @click="applyAdvancedFilters">确定</button>
         </div>
       </div>
@@ -223,23 +219,32 @@
           <h3 class="selector-title">选择目标</h3>
           <button class="selector-close" @click="closeGoalSelector">×</button>
         </div>
-        
+
         <div class="selector-content">
           <div class="search-box">
-            <input 
-              type="text" 
-              v-model="goalSearchQuery" 
-              placeholder="搜索目标..." 
+            <input
+              type="text"
+              v-model="goalSearchQuery"
+              placeholder="搜索目标名称..."
               class="search-input"
             >
+            <div class="search-icon">🔍</div>
           </div>
-          
+
+          <!-- 快速操作 -->
+          <div class="quick-actions">
+            <button class="quick-action-btn" @click="selectAllGoals">全选</button>
+            <button class="quick-action-btn" @click="clearAllGoals">清空</button>
+            <span class="selected-count">已选择 {{ selectedGoalOptions.length }} 个目标</span>
+          </div>
+
           <div class="goal-options">
-            <div 
-              v-for="option in filteredGoalOptions" 
+            <div
+              v-for="option in filteredGoalOptions"
               :key="option.id"
               class="goal-option"
-              @click="selectGoalOption(option)"
+              :class="{ active: selectedGoalOptions.includes(option.id) }"
+              @click="toggleGoalOption(option.id)"
             >
               <div class="option-content">
                 <div class="option-main">
@@ -251,11 +256,11 @@
                   <span class="option-progress">{{ option.completionRate }}</span>
                 </div>
               </div>
-              <div class="option-radio">
-                <input 
-                  type="radio" 
-                  :value="option.id" 
-                  v-model="selectedGoalOption" 
+              <div class="option-checkbox">
+                <input
+                  type="checkbox"
+                  :value="option.id"
+                  v-model="selectedGoalOptions"
                   :id="`goal-${option.id}`"
                 >
                 <label :for="`goal-${option.id}`"></label>
@@ -263,10 +268,333 @@
             </div>
           </div>
         </div>
-        
+
         <div class="selector-footer">
           <button class="selector-cancel-btn" @click="closeGoalSelector">取消</button>
-          <button class="selector-confirm-btn" @click="confirmGoalSelection">确定</button>
+          <button class="selector-confirm-btn" @click="confirmGoalSelection" :disabled="selectedGoalOptions.length === 0">
+            确定 ({{ selectedGoalOptions.length }})
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 状态选择弹窗 -->
+    <div v-if="showStatusSelector" class="selector-overlay" @click="closeStatusSelector">
+      <div class="selector-modal" @click.stop>
+        <div class="selector-header">
+          <h3 class="selector-title">选择目标状态</h3>
+          <button class="selector-close" @click="closeStatusSelector">×</button>
+        </div>
+
+        <div class="selector-content">
+          <div class="status-options">
+            <div
+              v-for="status in statusOptions"
+              :key="status.value"
+              class="status-option"
+              :class="{ active: selectedStatusOption === status.value }"
+              @click="selectStatusOption(status.value)"
+            >
+              <div class="option-content">
+                <span class="option-name">{{ status.label }}</span>
+                <span class="option-description">{{ status.description }}</span>
+              </div>
+              <div class="option-radio">
+                <input
+                  type="radio"
+                  :value="status.value"
+                  v-model="selectedStatusOption"
+                  :id="`status-${status.value}`"
+                >
+                <label :for="`status-${status.value}`"></label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="selector-footer">
+          <button class="selector-cancel-btn" @click="closeStatusSelector">取消</button>
+          <button class="selector-confirm-btn" @click="confirmStatusSelection">确定</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 部门选择弹窗 -->
+    <div v-if="showDepartmentSelector" class="selector-overlay" @click="closeDepartmentSelector">
+      <div class="selector-modal" @click.stop>
+        <div class="selector-header">
+          <h3 class="selector-title">选择部门</h3>
+          <button class="selector-close" @click="closeDepartmentSelector">×</button>
+        </div>
+
+        <div class="selector-content">
+          <div class="department-options">
+            <div
+              v-for="department in departmentOptions"
+              :key="department.value"
+              class="department-option"
+              :class="{ active: selectedDepartmentOption === department.value }"
+              @click="selectDepartmentOption(department.value)"
+            >
+              <div class="option-content">
+                <span class="option-name">{{ department.label }}</span>
+              </div>
+              <div class="option-radio">
+                <input
+                  type="radio"
+                  :value="department.value"
+                  v-model="selectedDepartmentOption"
+                  :id="`dept-${department.value}`"
+                >
+                <label :for="`dept-${department.value}`"></label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="selector-footer">
+          <button class="selector-cancel-btn" @click="closeDepartmentSelector">取消</button>
+          <button class="selector-confirm-btn" @click="confirmDepartmentSelection">确定</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 指标选择弹窗 -->
+    <div v-if="showMetricSelector" class="selector-overlay" @click="closeMetricSelector">
+      <div class="selector-modal" @click.stop>
+        <div class="selector-header">
+          <h3 class="selector-title">选择目标指标</h3>
+          <button class="selector-close" @click="closeMetricSelector">×</button>
+        </div>
+
+        <div class="selector-content">
+          <div class="metric-options">
+            <div
+              v-for="metric in metricOptions"
+              :key="metric.value"
+              class="metric-option"
+              :class="{ active: selectedMetricOption === metric.value }"
+              @click="selectMetricOption(metric.value)"
+            >
+              <div class="option-content">
+                <span class="option-name">{{ metric.label }}</span>
+              </div>
+              <div class="option-radio">
+                <input
+                  type="radio"
+                  :value="metric.value"
+                  v-model="selectedMetricOption"
+                  :id="`metric-${metric.value}`"
+                >
+                <label :for="`metric-${metric.value}`"></label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="selector-footer">
+          <button class="selector-cancel-btn" @click="closeMetricSelector">取消</button>
+          <button class="selector-confirm-btn" @click="confirmMetricSelection">确定</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 排序选择弹窗 -->
+    <div v-if="showSortSelector" class="selector-overlay" @click="closeSortSelector">
+      <div class="selector-modal" @click.stop>
+        <div class="selector-header">
+          <h3 class="selector-title">选择排序方式</h3>
+          <button class="selector-close" @click="closeSortSelector">×</button>
+        </div>
+
+        <div class="selector-content">
+          <div class="sort-options">
+            <div
+              v-for="sort in sortOptions"
+              :key="sort.value"
+              class="sort-option"
+              :class="{ active: selectedSortOption === sort.value }"
+              @click="selectSortOption(sort.value)"
+            >
+              <div class="option-content">
+                <span class="option-name">{{ sort.label }}</span>
+              </div>
+              <div class="option-radio">
+                <input
+                  type="radio"
+                  :value="sort.value"
+                  v-model="selectedSortOption"
+                  :id="`sort-${sort.value}`"
+                >
+                <label :for="`sort-${sort.value}`"></label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="selector-footer">
+          <button class="selector-cancel-btn" @click="closeSortSelector">取消</button>
+          <button class="selector-confirm-btn" @click="confirmSortSelection">确定</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 从下向上的目标名称选择界面 -->
+    <div v-if="showNameFilterBottomSheet" class="bottom-sheet-overlay" @click="closeNameFilterBottomSheet">
+      <div class="bottom-sheet" @click.stop>
+        <div class="bottom-sheet-header">
+          <h3 class="bottom-sheet-title">选择目标名称</h3>
+          <button class="bottom-sheet-close" @click="closeNameFilterBottomSheet">×</button>
+        </div>
+
+        <div class="bottom-sheet-content">
+          <div class="search-box">
+            <input
+              type="text"
+              v-model="goalSearchQuery"
+              placeholder="搜索目标名称..."
+              class="search-input"
+            >
+            <div class="search-icon">🔍</div>
+          </div>
+
+          <div class="quick-actions">
+            <button class="quick-action-btn" @click="selectAllGoals">全选</button>
+            <button class="quick-action-btn" @click="clearAllGoals">清空</button>
+            <span class="selected-count">已选择 {{ selectedGoalOptions.length }} 个目标</span>
+          </div>
+
+          <div class="goal-options">
+            <div
+              v-for="option in filteredGoalOptions"
+              :key="option.id"
+              class="goal-option"
+              :class="{ active: selectedGoalOptions.includes(option.id) }"
+              @click="toggleGoalOption(option.id)"
+            >
+              <div class="option-content">
+                <div class="option-main">
+                  <span class="option-name">{{ option.name }}</span>
+                  <span class="option-period">{{ option.period }}</span>
+                </div>
+                <div class="option-metrics">
+                  <span class="option-metric">{{ option.metric }}</span>
+                  <span class="option-progress">{{ option.completionRate }}</span>
+                </div>
+              </div>
+              <div class="option-checkbox">
+                <input
+                  type="checkbox"
+                  :value="option.id"
+                  v-model="selectedGoalOptions"
+                  :id="`bottom-goal-${option.id}`"
+                >
+                <label :for="`bottom-goal-${option.id}`"></label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bottom-sheet-footer">
+          <button class="bottom-sheet-cancel-btn" @click="closeNameFilterBottomSheet">取消</button>
+          <button class="bottom-sheet-confirm-btn" @click="confirmNameFilterSelection" :disabled="selectedGoalOptions.length === 0">
+            确定 ({{ selectedGoalOptions.length }})
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 从下向上的状态选择界面 -->
+    <div v-if="showStatusFilterBottomSheet" class="bottom-sheet-overlay" @click="closeStatusFilterBottomSheet">
+      <div class="bottom-sheet" @click.stop>
+        <div class="bottom-sheet-header">
+          <h3 class="bottom-sheet-title">选择目标状态</h3>
+          <button class="bottom-sheet-close" @click="closeStatusFilterBottomSheet">×</button>
+        </div>
+
+        <div class="bottom-sheet-content">
+          <div class="status-options">
+            <div
+              v-for="status in statusOptions"
+              :key="status.value"
+              class="status-option"
+              :class="{ active: selectedStatusOption === status.value }"
+              @click="selectStatusOptionBottomSheet(status.value)"
+            >
+              <div class="option-content">
+                <span class="option-name">{{ status.label }}</span>
+                <span class="option-description">{{ status.description }}</span>
+              </div>
+              <div class="option-radio">
+                <input
+                  type="radio"
+                  :value="status.value"
+                  v-model="selectedStatusOption"
+                  :id="`bottom-status-${status.value}`"
+                >
+                <label :for="`bottom-status-${status.value}`"></label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bottom-sheet-footer">
+          <button class="bottom-sheet-cancel-btn" @click="closeStatusFilterBottomSheet">取消</button>
+          <button class="bottom-sheet-confirm-btn" @click="confirmStatusFilterSelection">确定</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 从下向上的高级筛选界面 -->
+    <div v-if="showAdvancedFilterBottomSheet" class="bottom-sheet-overlay" @click="closeAdvancedFilterBottomSheet">
+      <div class="bottom-sheet" @click.stop>
+        <div class="bottom-sheet-header">
+          <h3 class="bottom-sheet-title">筛选条件</h3>
+          <button class="bottom-sheet-close" @click="closeAdvancedFilterBottomSheet">×</button>
+        </div>
+
+        <div class="bottom-sheet-content">
+          <!-- 部门筛选 -->
+          <div class="filter-item" @click="openDepartmentSelectorFromBottomSheet">
+            <div class="filter-item-label">部门</div>
+            <div class="filter-item-value">
+              <span class="filter-value-text">{{ departmentFilterDisplay }}</span>
+              <span class="filter-arrow">></span>
+            </div>
+          </div>
+
+          <!-- 目标进展状态筛选 -->
+          <div class="filter-item" @click="openStatusSelectorFromBottomSheet">
+            <div class="filter-item-label">目标进展状态</div>
+            <div class="filter-item-value">
+              <span class="filter-value-text">{{ statusFilterDisplay }}</span>
+              <span class="filter-arrow">></span>
+            </div>
+          </div>
+
+          <!-- 目标指标筛选 -->
+          <div class="filter-item" @click="openMetricSelectorFromBottomSheet">
+            <div class="filter-item-label">目标指标</div>
+            <div class="filter-item-value">
+              <span class="filter-value-text">{{ metricFilterDisplay }}</span>
+              <span class="filter-arrow">></span>
+            </div>
+          </div>
+
+          <!-- 排序方式 -->
+          <div class="filter-item" @click="openSortSelectorFromBottomSheet">
+            <div class="filter-item-label">排序方式</div>
+            <div class="filter-item-value">
+              <span class="filter-value-text">{{ sortFilterDisplay }}</span>
+              <span class="filter-arrow">></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="bottom-sheet-footer">
+          <button class="bottom-sheet-reset-btn" @click="resetAdvancedFilters">重置</button>
+          <button class="bottom-sheet-clear-btn" @click="clearAllFilters">清空所有</button>
+          <button class="bottom-sheet-confirm-btn" @click="confirmAdvancedFilterSelection">确定</button>
         </div>
       </div>
     </div>
@@ -281,9 +609,22 @@ export default {
       selectedTab: 'business', // 默认选中业务目标
       showAdvancedFilter: false,
       showGoalSelector: false,
+      showStatusSelector: false,
+      showDepartmentSelector: false,
+      showMetricSelector: false,
+      showSortSelector: false,
+      showNameFilterBottomSheet: false,
+      showStatusFilterBottomSheet: false,
+      showAdvancedFilterBottomSheet: false,
+      fromBottomSheet: false, // 标记是否从底部弹窗打开的选择器
       goalSearchQuery: '',
       selectedGoalOption: null,
-      
+      selectedGoalOptions: [], // 支持多选
+      selectedStatusOption: '',
+      selectedDepartmentOption: '',
+      selectedMetricOption: '',
+      selectedSortOption: 'completion-rate-desc',
+
       // 筛选条件
       nameFilter: '',
       statusFilter: '',
@@ -296,10 +637,10 @@ export default {
       
       // 标签配置
       tabs: [
-        { id: 'all', name: '全部' },
-        { id: 'business', name: '业务目标' },
-        { id: 'brand', name: '品牌目标' },
-        { id: 'product', name: '商品目标' }
+        { id: 'all', name: '全部', description: '显示所有类型的目标' },
+        { id: 'business', name: '业务目标', description: '销售金额、订单量等直接业绩' },
+        { id: 'brand', name: '品牌目标', description: '品牌曝光、市场调研等间接指标' },
+        { id: 'product', name: '商品目标', description: '单品销售、SKU库存等' }
       ],
       
       // 目标数据
@@ -452,6 +793,43 @@ export default {
         { id: 104, name: '南侨食品 - 茗姐', period: '2025-01-01 ~ 2025-12-31', metric: '市场占有率', completionRate: '74.00%' },
         { id: 105, name: '卡夫 - 测试', period: '2025-01-01 ~ 2025-12-31', metric: '订单金额', completionRate: '0%' },
         { id: 106, name: '闪光挖掘机 602 - 脉动 2024 年销售', period: '2024-01-01 ~ 2024-12-31', metric: '销售数量', completionRate: '125.00%' }
+      ],
+
+      // 状态选择器选项
+      statusOptions: [
+        { value: '', label: '全部', description: '显示所有阶段的目标' },
+        { value: 'not-started', label: '未开始', description: '仅显示"未启动"的目标' },
+        { value: 'in-progress', label: '进行中', description: '仅显示"执行中"的目标' },
+        { value: 'completed', label: '已结束', description: '仅显示"已完成/终止"的目标' },
+        { value: 'terminated', label: '已终止', description: '仅显示"中途叫停"的目标' }
+      ],
+
+      // 部门选择器选项
+      departmentOptions: [
+        { value: '', label: '全部部门' },
+        { value: 'sales', label: '销售部' },
+        { value: 'marketing', label: '市场部' },
+        { value: 'operations', label: '运营部' },
+        { value: 'finance', label: '财务部' }
+      ],
+
+      // 指标选择器选项
+      metricOptions: [
+        { value: '', label: '全部指标' },
+        { value: '订单金额', label: '订单金额' },
+        { value: '销售金额', label: '销售金额' },
+        { value: '销售数量', label: '销售数量' },
+        { value: '市场占有率', label: '市场占有率' }
+      ],
+
+      // 排序选择器选项
+      sortOptions: [
+        { value: 'completion-rate-desc', label: '按完成率降序' },
+        { value: 'completion-rate-asc', label: '按完成率升序' },
+        { value: 'target-amount-desc', label: '按目标金额降序' },
+        { value: 'target-amount-asc', label: '按目标金额升序' },
+        { value: 'name-asc', label: '按名称升序' },
+        { value: 'name-desc', label: '按名称降序' }
       ]
     }
   },
@@ -529,10 +907,60 @@ export default {
       const statusMap = {
         'not-started': '未开始',
         'in-progress': '进行中',
-        'completed': '已完成',
-        'overdue': '已逾期'
+        'completed': '已结束',
+        'terminated': '已终止'
       }
-      return this.statusFilter ? statusMap[this.statusFilter] : '全部状态'
+      return this.advancedFilters.progressStatus ? statusMap[this.advancedFilters.progressStatus] : '全部状态'
+    },
+
+    // 部门筛选显示文本
+    departmentFilterDisplay() {
+      const departmentMap = {
+        'sales': '销售部',
+        'marketing': '市场部',
+        'operations': '运营部',
+        'finance': '财务部'
+      }
+      return this.advancedFilters.department ? departmentMap[this.advancedFilters.department] : '全部部门'
+    },
+
+    // 指标筛选显示文本
+    metricFilterDisplay() {
+      return this.advancedFilters.metric || '全部指标'
+    },
+
+    // 排序筛选显示文本
+    sortFilterDisplay() {
+      const sortMap = {
+        'completion-rate-desc': '按完成率降序',
+        'completion-rate-asc': '按完成率升序',
+        'target-amount-desc': '按目标金额降序',
+        'target-amount-asc': '按目标金额升序',
+        'name-asc': '按名称升序',
+        'name-desc': '按名称降序'
+      }
+      return sortMap[this.advancedFilters.sortBy] || '按完成率降序'
+    },
+
+    // 标签数量统计
+    tabCounts() {
+      const counts = {
+        all: this.goals.length,
+        business: this.goals.filter(goal => goal.type === 'business').length,
+        brand: this.goals.filter(goal => goal.type === 'brand').length,
+        product: this.goals.filter(goal => goal.type === 'product').length
+      }
+      return counts
+    },
+
+    // 检查是否有活跃的筛选条件
+    hasActiveFilters() {
+      return this.nameFilter ||
+             this.statusFilter ||
+             this.advancedFilters.department ||
+             this.advancedFilters.progressStatus ||
+             this.advancedFilters.metric ||
+             this.advancedFilters.sortBy !== 'completion-rate-desc'
     }
   },
   
@@ -545,6 +973,13 @@ export default {
     // 返回上一页
     goBack() {
       this.$router.go(-1)
+    },
+
+    // 播放视频
+    playVideo() {
+      console.log('播放目标管理教学视频')
+      // 这里可以打开视频播放器或跳转到视频页面
+      alert('目标管理教学视频播放功能开发中')
     },
     
     // 导出数据
@@ -605,11 +1040,238 @@ export default {
         sortBy: 'completion-rate-desc'
       }
     },
+
+    // 清空所有筛选条件
+    clearAllFilters() {
+      this.nameFilter = ''
+      this.statusFilter = ''
+      this.advancedFilters = {
+        department: '',
+        progressStatus: '',
+        metric: '',
+        sortBy: 'completion-rate-desc'
+      }
+      this.selectedTab = 'all'
+    },
     
     // 应用高级筛选
     applyAdvancedFilters() {
       this.showAdvancedFilter = false
       console.log('应用高级筛选条件:', this.advancedFilters)
+      // 筛选条件会通过computed属性自动应用到filteredGoals
+      this.$nextTick(() => {
+        console.log('筛选后的目标数量:', this.filteredGoals.length)
+      })
+    },
+
+    // === 状态选择器相关方法 ===
+    openStatusSelector() {
+      this.selectedStatusOption = this.advancedFilters.progressStatus
+      this.showStatusSelector = true
+      // 隐藏主筛选窗口
+      this.showAdvancedFilter = false
+      // 确保不是从底部弹窗打开的标记
+      this.fromBottomSheet = false
+    },
+
+    closeStatusSelector() {
+      this.showStatusSelector = false
+      this.selectedStatusOption = ''
+      // 判断应该返回到哪个界面
+      if (this.fromBottomSheet) {
+        this.showAdvancedFilterBottomSheet = true
+        this.fromBottomSheet = false
+      } else {
+        this.showAdvancedFilter = true
+      }
+    },
+
+    selectStatusOption(value) {
+      this.selectedStatusOption = value
+    },
+
+    confirmStatusSelection() {
+      this.advancedFilters.progressStatus = this.selectedStatusOption
+      this.closeStatusSelector()
+    },
+
+    // === 部门选择器相关方法 ===
+    openDepartmentSelector() {
+      this.selectedDepartmentOption = this.advancedFilters.department
+      this.showDepartmentSelector = true
+      // 隐藏主筛选窗口
+      this.showAdvancedFilter = false
+      // 确保不是从底部弹窗打开的标记
+      this.fromBottomSheet = false
+    },
+
+    closeDepartmentSelector() {
+      this.showDepartmentSelector = false
+      this.selectedDepartmentOption = ''
+      // 判断应该返回到哪个界面
+      if (this.fromBottomSheet) {
+        this.showAdvancedFilterBottomSheet = true
+        this.fromBottomSheet = false
+      } else {
+        this.showAdvancedFilter = true
+      }
+    },
+
+    selectDepartmentOption(value) {
+      this.selectedDepartmentOption = value
+    },
+
+    confirmDepartmentSelection() {
+      this.advancedFilters.department = this.selectedDepartmentOption
+      this.closeDepartmentSelector()
+    },
+
+    // === 指标选择器相关方法 ===
+    openMetricSelector() {
+      this.selectedMetricOption = this.advancedFilters.metric
+      this.showMetricSelector = true
+      // 隐藏主筛选窗口
+      this.showAdvancedFilter = false
+      // 确保不是从底部弹窗打开的标记
+      this.fromBottomSheet = false
+    },
+
+    closeMetricSelector() {
+      this.showMetricSelector = false
+      this.selectedMetricOption = ''
+      // 判断应该返回到哪个界面
+      if (this.fromBottomSheet) {
+        this.showAdvancedFilterBottomSheet = true
+        this.fromBottomSheet = false
+      } else {
+        this.showAdvancedFilter = true
+      }
+    },
+
+    selectMetricOption(value) {
+      this.selectedMetricOption = value
+    },
+
+    confirmMetricSelection() {
+      this.advancedFilters.metric = this.selectedMetricOption
+      this.closeMetricSelector()
+    },
+
+    // === 排序选择器相关方法 ===
+    openSortSelector() {
+      this.selectedSortOption = this.advancedFilters.sortBy
+      this.showSortSelector = true
+      // 隐藏主筛选窗口
+      this.showAdvancedFilter = false
+      // 确保不是从底部弹窗打开的标记
+      this.fromBottomSheet = false
+    },
+
+    closeSortSelector() {
+      this.showSortSelector = false
+      this.selectedSortOption = 'completion-rate-desc'
+      // 判断应该返回到哪个界面
+      if (this.fromBottomSheet) {
+        this.showAdvancedFilterBottomSheet = true
+        this.fromBottomSheet = false
+      } else {
+        this.showAdvancedFilter = true
+      }
+    },
+
+    selectSortOption(value) {
+      this.selectedSortOption = value
+    },
+
+    confirmSortSelection() {
+      this.advancedFilters.sortBy = this.selectedSortOption
+      this.closeSortSelector()
+    },
+
+    // === 从下向上弹出的选择界面方法 ===
+    // 目标名称选择
+    openNameFilterBottomSheet() {
+      this.showNameFilterBottomSheet = true
+    },
+
+    closeNameFilterBottomSheet() {
+      this.showNameFilterBottomSheet = false
+      this.goalSearchQuery = ''
+      this.selectedGoalOptions = []
+    },
+
+    confirmNameFilterSelection() {
+      if (this.selectedGoalOptions.length > 0) {
+        const selectedGoals = this.goalOptions.filter(opt => this.selectedGoalOptions.includes(opt.id))
+        this.nameFilter = selectedGoals.map(g => g.name).join(', ')
+        this.closeNameFilterBottomSheet()
+      } else {
+        this.nameFilter = ''
+        this.closeNameFilterBottomSheet()
+      }
+    },
+
+    // 状态选择
+    openStatusFilterBottomSheet() {
+      this.selectedStatusOption = this.advancedFilters.progressStatus
+      this.showStatusFilterBottomSheet = true
+    },
+
+    closeStatusFilterBottomSheet() {
+      this.showStatusFilterBottomSheet = false
+      this.selectedStatusOption = ''
+    },
+
+    selectStatusOptionBottomSheet(value) {
+      this.selectedStatusOption = value
+    },
+
+    confirmStatusFilterSelection() {
+      this.advancedFilters.progressStatus = this.selectedStatusOption
+      this.closeStatusFilterBottomSheet()
+    },
+
+    // 高级筛选
+    openAdvancedFilterBottomSheet() {
+      this.showAdvancedFilterBottomSheet = true
+    },
+
+    closeAdvancedFilterBottomSheet() {
+      this.showAdvancedFilterBottomSheet = false
+    },
+
+    confirmAdvancedFilterSelection() {
+      this.showAdvancedFilterBottomSheet = false
+      console.log('应用高级筛选条件:', this.advancedFilters)
+    },
+
+    // === 从底部弹窗打开选择器的专门方法 ===
+    openDepartmentSelectorFromBottomSheet() {
+      this.selectedDepartmentOption = this.advancedFilters.department
+      this.showDepartmentSelector = true
+      this.showAdvancedFilterBottomSheet = false
+      this.fromBottomSheet = true
+    },
+
+    openStatusSelectorFromBottomSheet() {
+      this.selectedStatusOption = this.advancedFilters.progressStatus
+      this.showStatusSelector = true
+      this.showAdvancedFilterBottomSheet = false
+      this.fromBottomSheet = true
+    },
+
+    openMetricSelectorFromBottomSheet() {
+      this.selectedMetricOption = this.advancedFilters.metric
+      this.showMetricSelector = true
+      this.showAdvancedFilterBottomSheet = false
+      this.fromBottomSheet = true
+    },
+
+    openSortSelectorFromBottomSheet() {
+      this.selectedSortOption = this.advancedFilters.sortBy
+      this.showSortSelector = true
+      this.showAdvancedFilterBottomSheet = false
+      this.fromBottomSheet = true
     },
     
     // 选择目标（打开目标选择器）
@@ -623,21 +1285,44 @@ export default {
       this.showGoalSelector = false
       this.goalSearchQuery = ''
       this.selectedGoalOption = null
+      this.selectedGoalOptions = []
     },
-    
-    // 选择目标选项
+
+    // 选择目标选项（单选，保持兼容性）
     selectGoalOption(option) {
       this.selectedGoalOption = option.id
     },
-    
+
+    // 切换目标选项（多选）
+    toggleGoalOption(optionId) {
+      const index = this.selectedGoalOptions.indexOf(optionId)
+      if (index > -1) {
+        this.selectedGoalOptions.splice(index, 1)
+      } else {
+        this.selectedGoalOptions.push(optionId)
+      }
+    },
+
+    // 全选目标
+    selectAllGoals() {
+      this.selectedGoalOptions = this.filteredGoalOptions.map(option => option.id)
+    },
+
+    // 清空选择
+    clearAllGoals() {
+      this.selectedGoalOptions = []
+    },
+
     // 确认目标选择
     confirmGoalSelection() {
-      if (this.selectedGoalOption) {
-        const selected = this.goalOptions.find(opt => opt.id === this.selectedGoalOption)
-        console.log('确认选择目标:', selected.name)
+      if (this.selectedGoalOptions.length > 0) {
+        const selectedGoals = this.goalOptions.filter(opt => this.selectedGoalOptions.includes(opt.id))
+        console.log('确认选择目标:', selectedGoals.map(g => g.name))
+        // 这里可以将选择的目标应用到筛选条件中
+        this.nameFilter = selectedGoals.map(g => g.name).join(', ')
         this.closeGoalSelector()
       } else {
-        alert('请选择一个目标')
+        alert('请至少选择一个目标')
       }
     },
     
@@ -648,16 +1333,13 @@ export default {
     },
     
     // 查看部门表现
-    viewDepartmentPerformance() {
-      console.log('查看部门表现')
-      alert('部门表现分析功能开发中')
+    viewDepartmentPerformance(goalId) {
+      console.log('查看部门表现:', goalId)
+      // 跳转到部门目标明细页
+      this.$router.push(`/department-goal-detail/${goalId}`)
     },
     
-    // 查看员工表现
-    viewEmployeePerformance() {
-      console.log('查看员工表现')
-      alert('员工表现分析功能开发中')
-    },
+
     
     // 目标排序
     sortGoals(goals, sortBy) {
@@ -731,13 +1413,44 @@ export default {
   height: 16px;
 }
 
+.title-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  justify-content: center;
+}
+
 .page-title {
   color: #333333;
   font-size: 18px;
   font-weight: 600;
   margin: 0;
-  flex: 1;
-  text-align: center;
+}
+
+.video-player-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background-color: #007AFF;
+  border: none;
+  border-radius: 50%;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.video-player-btn:hover {
+  background-color: #0056d6;
+  transform: scale(1.1);
+}
+
+.play-icon {
+  width: 12px;
+  height: 12px;
+  margin-left: 1px; /* 视觉居中调整 */
 }
 
 .export-btn {
@@ -842,12 +1555,36 @@ export default {
   font-weight: 500;
   padding: 6px 12px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
   white-space: nowrap;
+  position: relative;
 }
 
 .filter-section .advanced-filter-btn:hover {
   background-color: #0056d6;
+}
+
+.filter-section .advanced-filter-btn.has-filters {
+  background-color: #FF9500;
+}
+
+.filter-section .advanced-filter-btn.has-filters:hover {
+  background-color: #e6850e;
+}
+
+.filter-indicator {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  color: #FF3B30;
+  font-size: 8px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
 }
 
 /* 标签切换栏 */
@@ -859,20 +1596,22 @@ export default {
 .tab-container {
   display: flex;
   padding: 0 16px;
-  overflow-x: auto;
+  overflow: hidden; /* 移除滚动条 */
 }
 
 .tab-btn {
   background: none;
   border: none;
-  padding: 14px 20px;
+  padding: 14px 12px; /* 减少左右内边距 */
   color: #666666;
-  font-size: 15px;
+  font-size: 14px; /* 稍微减小字体 */
   cursor: pointer;
   border-bottom: 3px solid transparent;
   transition: all 0.2s;
   white-space: nowrap;
-  min-width: fit-content;
+  flex: 1; /* 平均分配宽度 */
+  text-align: center;
+  min-width: 0; /* 允许收缩 */
 }
 
 .tab-btn.active {
@@ -883,6 +1622,122 @@ export default {
 
 .tab-btn:hover {
   color: #007AFF;
+}
+
+.tab-name {
+  margin-right: 2px; /* 减少间距 */
+}
+
+.tab-count {
+  font-size: 11px; /* 减小数量字体 */
+  color: #666666;
+  font-weight: normal;
+}
+
+.tab-btn.active .tab-count {
+  color: #007AFF;
+}
+
+/* 在小屏幕上进一步优化 */
+@media (max-width: 480px) {
+  .tab-btn {
+    padding: 12px 8px;
+    font-size: 13px;
+  }
+
+  .tab-count {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 360px) {
+  .tab-btn {
+    padding: 10px 6px;
+    font-size: 12px;
+  }
+
+  .tab-name {
+    margin-right: 1px;
+  }
+
+  .tab-count {
+    font-size: 9px;
+  }
+}
+
+/* 新的筛选行 */
+.new-filter-bar {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #eaeaea;
+  gap: 12px;
+}
+
+.new-filter-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 80px;
+}
+
+.new-filter-item:hover {
+  background-color: #e9ecef;
+}
+
+.new-filter-item .filter-label {
+  font-size: 13px;
+  color: #333333;
+  font-weight: 500;
+}
+
+.new-filter-item .filter-value {
+  font-size: 12px;
+  color: #666666;
+  max-width: 60px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.new-filter-item .filter-arrow {
+  stroke: #999999;
+  stroke-width: 1.5;
+  fill: none;
+  width: 12px;
+  height: 8px;
+}
+
+.new-filter-btn {
+  background-color: #007AFF;
+  border: none;
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  margin-left: auto;
+}
+
+.new-filter-btn:hover {
+  background-color: #0056d6;
+}
+
+.new-filter-btn.has-filters {
+  background-color: #FF9500;
+}
+
+.new-filter-btn.has-filters:hover {
+  background-color: #e6850e;
 }
 
 /* 目标列表区 */
@@ -1058,6 +1913,24 @@ export default {
 .goal-actions {
   display: flex;
   justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.department-performance-btn {
+  background-color: #34C759;
+  border: none;
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.department-performance-btn:hover {
+  background-color: #28a745;
 }
 
 .modify-btn {
@@ -1076,41 +1949,7 @@ export default {
   background-color: #0056d6;
 }
 
-/* 底部操作区 */
-.bottom-actions {
-  display: flex;
-  gap: 12px;
-  padding: 16px;
-  background-color: #ffffff;
-  border-top: 1px solid #eaeaea;
-  position: sticky;
-  bottom: 0;
-}
 
-.performance-btn {
-  flex: 1;
-  background-color: #007AFF;
-  border: none;
-  border-radius: 8px;
-  color: #ffffff;
-  font-size: 15px;
-  font-weight: 600;
-  padding: 14px 20px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.performance-btn:hover {
-  background-color: #0056d6;
-}
-
-.performance-btn:first-child {
-  background-color: #34C759;
-}
-
-.performance-btn:first-child:hover {
-  background-color: #28a745;
-}
 
 /* 无数据状态 */
 .no-data {
@@ -1130,9 +1969,10 @@ export default {
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 1000;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   padding: 20px;
+  animation: fadeIn 0.3s ease;
 }
 
 .filter-modal {
@@ -1144,6 +1984,18 @@ export default {
   display: flex;
   flex-direction: column;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .filter-header {
@@ -1187,6 +2039,47 @@ export default {
   padding: 20px;
 }
 
+/* 新的筛选项样式 */
+.filter-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.filter-item:hover {
+  background-color: #f8f9fa;
+}
+
+.filter-item:last-child {
+  border-bottom: none;
+}
+
+.filter-item-label {
+  font-size: 16px;
+  color: #333333;
+  font-weight: 500;
+}
+
+.filter-item-value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-value-text {
+  font-size: 14px;
+  color: #666666;
+}
+
+.filter-arrow {
+  font-size: 14px;
+  color: #999999;
+}
+
 .filter-group {
   margin-bottom: 20px;
 }
@@ -1221,7 +2114,7 @@ export default {
 
 .filter-footer {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   padding: 16px 20px;
   border-top: 1px solid #eaeaea;
 }
@@ -1242,6 +2135,23 @@ export default {
 .filter-reset-btn:hover {
   border-color: #007AFF;
   color: #007AFF;
+}
+
+.filter-clear-btn {
+  flex: 1;
+  background-color: #FF3B30;
+  border: none;
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.filter-clear-btn:hover {
+  background-color: #d70015;
 }
 
 .filter-confirm-btn {
@@ -1330,13 +2240,14 @@ export default {
 }
 
 .search-box {
+  position: relative;
   padding: 16px 20px;
   border-bottom: 1px solid #eaeaea;
 }
 
 .search-input {
   width: 100%;
-  padding: 10px 12px;
+  padding: 10px 40px 10px 12px;
   border: 1px solid #ddd;
   border-radius: 6px;
   font-size: 14px;
@@ -1349,6 +2260,46 @@ export default {
   outline: none;
   border-color: #007AFF;
   background-color: #ffffff;
+}
+
+.search-icon {
+  position: absolute;
+  right: 32px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999999;
+  font-size: 14px;
+}
+
+/* 快速操作 */
+.quick-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 20px;
+  border-bottom: 1px solid #f0f0f0;
+  background-color: #f8f9fa;
+}
+
+.quick-action-btn {
+  background: none;
+  border: 1px solid #007AFF;
+  border-radius: 4px;
+  color: #007AFF;
+  font-size: 12px;
+  padding: 4px 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.quick-action-btn:hover {
+  background-color: #007AFF;
+  color: #ffffff;
+}
+
+.selected-count {
+  font-size: 12px;
+  color: #666666;
 }
 
 .goal-options {
@@ -1440,6 +2391,43 @@ export default {
   cursor: pointer;
 }
 
+/* 复选框样式 */
+.option-checkbox {
+  margin-left: 12px;
+}
+
+.option-checkbox input[type="checkbox"] {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #ddd;
+  border-radius: 3px;
+  margin: 0;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.option-checkbox input[type="checkbox"]:checked {
+  border-color: #007AFF;
+  background-color: #007AFF;
+}
+
+.option-checkbox input[type="checkbox"]:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.option-checkbox label {
+  cursor: pointer;
+}
+
 .selector-footer {
   display: flex;
   gap: 12px;
@@ -1480,6 +2468,192 @@ export default {
 
 .selector-confirm-btn:hover {
   background-color: #0056d6;
+}
+
+/* 状态选择器选项样式 */
+.status-options, .department-options, .metric-options, .sort-options {
+  padding: 0;
+}
+
+.status-option, .department-option, .metric-option, .sort-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.status-option:hover, .department-option:hover, .metric-option:hover, .sort-option:hover {
+  background-color: #f8f9fa;
+}
+
+.status-option:last-child, .department-option:last-child, .metric-option:last-child, .sort-option:last-child {
+  border-bottom: none;
+}
+
+.status-option.active, .department-option.active, .metric-option.active, .sort-option.active {
+  background-color: #e3f2fd;
+}
+
+.status-option .option-content, .department-option .option-content, .metric-option .option-content, .sort-option .option-content {
+  flex: 1;
+}
+
+.status-option .option-name, .department-option .option-name, .metric-option .option-name, .sort-option .option-name {
+  font-size: 16px;
+  color: #333333;
+  font-weight: 500;
+  display: block;
+}
+
+.status-option .option-description {
+  font-size: 14px;
+  color: #666666;
+  margin-top: 4px;
+  display: block;
+}
+
+/* 从下向上弹出的界面样式 */
+.bottom-sheet-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.bottom-sheet {
+  background-color: #ffffff;
+  border-radius: 16px 16px 0 0;
+  width: 100%;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.bottom-sheet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 16px 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.bottom-sheet-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333333;
+  margin: 0;
+}
+
+.bottom-sheet-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #999999;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bottom-sheet-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.bottom-sheet-footer {
+  display: flex;
+  gap: 8px;
+  padding: 16px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.bottom-sheet-cancel-btn {
+  flex: 1;
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  color: #666666;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.bottom-sheet-reset-btn {
+  flex: 1;
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  color: #666666;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.bottom-sheet-clear-btn {
+  flex: 1;
+  background-color: #FF3B30;
+  border: none;
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.bottom-sheet-clear-btn:hover {
+  background-color: #d70015;
+}
+
+.bottom-sheet-confirm-btn {
+  flex: 1;
+  background-color: #007AFF;
+  border: none;
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.bottom-sheet-confirm-btn:hover {
+  background-color: #0056d6;
+}
+
+.bottom-sheet-confirm-btn:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
 }
 
 /* 响应式设计 */
@@ -1531,10 +2705,6 @@ export default {
     grid-template-columns: 1fr;
     gap: 8px;
   }
-  
-  .bottom-actions {
-    flex-direction: column;
-  }
 }
 
 @media (max-width: 360px) {
@@ -1582,10 +2752,6 @@ export default {
   }
   
   .goal-card {
-    padding: 12px;
-  }
-  
-  .bottom-actions {
     padding: 12px;
   }
 }
