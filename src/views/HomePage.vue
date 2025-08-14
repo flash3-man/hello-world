@@ -1020,8 +1020,8 @@ export default {
           this.$router.push('/focus-list')
           break
         case 'analysis':
-          // 进入经营解读页
-          this.$router.push('/business-analysis')
+          // 进入综合解读页
+          this.$router.push('/comprehensive-analysis')
           break
         case 'profile':
           // 进入个人中心页
