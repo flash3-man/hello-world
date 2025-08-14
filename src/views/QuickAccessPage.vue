@@ -292,7 +292,7 @@ export default {
       
       // 资金业务域
       financeApps: [
-        { id: 501, name: '资金整体分析', icon: '💰', route: '/finance-analysis', colorClass: 'green', domain: '资金业务', description: '资金流入流出余额分析' },
+        { id: 501, name: '资金整体分析', icon: '💰', route: '/financial-analysis', colorClass: 'green', domain: '资金业务', description: '资金流入流出余额分析' },
         { id: 502, name: '客户应收余额', icon: '💳', route: '/customer-receivables', colorClass: 'orange', domain: '资金业务', description: '客户应收账款总额、逾期金额' },
         { id: 503, name: '员工回款探查', icon: '🔍', route: '/employee-payment-analysis', colorClass: 'blue', domain: '资金业务', description: '员工负责的回款情况分析' }
       ]

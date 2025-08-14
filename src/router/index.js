@@ -15,6 +15,7 @@ import QuickAccessPage from '@/views/QuickAccessPage.vue'
 import DepartmentGoalDetail from '@/views/DepartmentGoalDetail.vue'
 import EmployeeDynamics from '@/views/EmployeeDynamics.vue'
 import VisitAnalysis from '@/views/VisitAnalysis.vue'
+import FinancialAnalysis from '@/views/FinancialAnalysis.vue'
 import TestTable from '@/views/TestTable.vue'
 import TestTableLayout from '@/views/TestTableLayout.vue'
 
@@ -28,6 +29,11 @@ const routes = [
     path: '/visit-analysis',
     name: 'VisitAnalysis',
     component: VisitAnalysis
+  },
+  {
+    path: '/financial-analysis',
+    name: 'FinancialAnalysis',
+    component: FinancialAnalysis
   },
   {
     path: '/employee-performance',
