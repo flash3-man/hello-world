@@ -18,6 +18,7 @@ import VisitAnalysis from '@/views/VisitAnalysis.vue'
 import FinancialAnalysis from '@/views/FinancialAnalysis.vue'
 import TestTable from '@/views/TestTable.vue'
 import TestTableLayout from '@/views/TestTableLayout.vue'
+import ComprehensiveAnalysis from '@/views/ComprehensiveAnalysis.vue'
 
 const routes = [
   {
@@ -114,6 +115,11 @@ const routes = [
     path: '/test-layout',
     name: 'TestTableLayout',
     component: TestTableLayout
+  },
+  {
+    path: '/comprehensive-analysis',
+    name: 'ComprehensiveAnalysis',
+    component: ComprehensiveAnalysis
   }
 ]
 
