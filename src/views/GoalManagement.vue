@@ -126,13 +126,35 @@
           
           <!-- 目标操作按钮 -->
           <div class="goal-actions">
-            <button 
-              v-if="goal.canModify" 
-              class="modify-btn" 
+            <button
+              v-if="goal.canModify"
+              class="modify-btn"
               @click.stop="modifyGoal(goal.id)"
             >
               修改目标
             </button>
+
+            <!-- 下钻分析按钮（仅对超额完成的目标显示） -->
+            <div v-if="goal.isOverCompleted" class="drill-down-actions">
+              <button
+                class="drill-down-btn department-btn"
+                @click.stop="viewDepartmentPerformance(goal.id)"
+              >
+                看部门表现
+              </button>
+              <button
+                class="drill-down-btn employee-btn"
+                @click.stop="viewEmployeePerformance(goal.id)"
+              >
+                看员工表现
+              </button>
+            </div>
+
+            <!-- 数据异常提示 -->
+            <div v-if="goal.hasDataError" class="data-error-notice">
+              <span class="error-icon">⚠️</span>
+              <span class="error-text">数据异常，请核对</span>
+            </div>
           </div>
         </div>
 
@@ -322,16 +344,17 @@ export default {
           differenceClass: 'negative',
           progressWidth: '0.11%',
           isOverCompleted: false,
-          canModify: true
+          canModify: true,
+          hasDataError: true // 标记数据异常
         },
         {
           id: 2,
           type: 'business',
-          name: '20000 销售目标',
+          name: '20000',
           metric: '销售金额',
           period: '2025-01-01 ~ 2025-12-31',
-          target: '2000.00',
-          completed: '28669.13',
+          target: '2,000.00',
+          completed: '28,669.13',
           difference: '超额完成',
           completionRate: '1433.46%',
           unit: '元',
@@ -341,7 +364,8 @@ export default {
           differenceClass: 'positive',
           progressWidth: '100%',
           isOverCompleted: true,
-          canModify: true
+          canModify: true,
+          hasDataError: false
         },
         
         // 品牌目标
@@ -648,15 +672,27 @@ export default {
     },
     
     // 查看部门表现
-    viewDepartmentPerformance() {
-      console.log('查看部门表现')
-      alert('部门表现分析功能开发中')
+    viewDepartmentPerformance(goalId = null) {
+      console.log('查看部门表现', goalId ? `目标ID: ${goalId}` : '全部目标')
+      if (goalId) {
+        // 跳转到部门目标明细页
+        this.$router.push(`/department-goal-detail/${goalId}`)
+      } else {
+        // 跳转到部门整体表现页
+        this.$router.push('/department-performance')
+      }
     },
-    
+
     // 查看员工表现
-    viewEmployeePerformance() {
-      console.log('查看员工表现')
-      alert('员工表现分析功能开发中')
+    viewEmployeePerformance(goalId = null) {
+      console.log('查看员工表现', goalId ? `目标ID: ${goalId}` : '全部目标')
+      if (goalId) {
+        // 跳转到员工目标明细页
+        this.$router.push(`/employee-goal-detail/${goalId}`)
+      } else {
+        // 跳转到员工整体表现页
+        this.$router.push('/employee-performance')
+      }
     },
     
     // 目标排序
@@ -1057,7 +1093,9 @@ export default {
 /* 目标操作按钮 */
 .goal-actions {
   display: flex;
-  justify-content: flex-end;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-end;
 }
 
 .modify-btn {
@@ -1074,6 +1112,76 @@ export default {
 
 .modify-btn:hover {
   background-color: #0056d6;
+}
+
+/* 下钻分析按钮 */
+.drill-down-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.drill-down-btn {
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  color: #495057;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.drill-down-btn:hover {
+  background-color: #e9ecef;
+  border-color: #007AFF;
+  color: #007AFF;
+}
+
+.drill-down-btn.department-btn {
+  background-color: #e8f5e8;
+  border-color: #28a745;
+  color: #28a745;
+}
+
+.drill-down-btn.department-btn:hover {
+  background-color: #28a745;
+  color: #ffffff;
+}
+
+.drill-down-btn.employee-btn {
+  background-color: #fff3cd;
+  border-color: #ffc107;
+  color: #856404;
+}
+
+.drill-down-btn.employee-btn:hover {
+  background-color: #ffc107;
+  color: #212529;
+}
+
+/* 数据异常提示 */
+.data-error-notice {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background-color: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 4px;
+  padding: 4px 8px;
+  margin-top: 8px;
+}
+
+.error-icon {
+  font-size: 14px;
+}
+
+.error-text {
+  color: #856404;
+  font-size: 11px;
+  font-weight: 500;
 }
 
 /* 底部操作区 */
