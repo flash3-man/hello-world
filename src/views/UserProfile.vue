@@ -2,16 +2,18 @@
   <div class="user-profile">
     <!-- 顶部用户信息卡片 -->
     <div class="user-info-card">
-      <div class="user-avatar">
-        <div class="avatar-icon">👤</div>
-      </div>
-      <div class="user-details">
-        <h2 class="user-name">{{ userInfo.name }}</h2>
-        <p class="user-subtitle">{{ userInfo.subtitle }}</p>
-      </div>
       <button class="edit-profile-btn" @click="editProfile">
         编辑资料
       </button>
+      <div class="user-content">
+        <div class="user-avatar">
+          <div class="avatar-icon">👤</div>
+        </div>
+        <div class="user-details">
+          <h2 class="user-name">{{ userInfo.name }}</h2>
+          <p class="user-subtitle">{{ userInfo.subtitle }}</p>
+        </div>
+      </div>
     </div>
 
     <!-- 新功能提示 -->
@@ -90,18 +92,33 @@
         <div class="nav-label">我的</div>
       </div>
     </div>
+
+    <!-- 添加小程序弹窗 -->
+    <AddMiniProgramModal
+      :visible="showAddMiniProgramModal"
+      @cancel="hideAddMiniProgramModal"
+      @confirm="handleAddMiniProgram"
+    />
   </div>
 </template>
 
 <script>
+import AddMiniProgramModal from '@/components/AddMiniProgramModal.vue'
+
 export default {
   name: 'UserProfile',
+  components: {
+    AddMiniProgramModal
+  },
   data() {
     return {
       userInfo: {
         name: '王轮丽',
-        subtitle: '走进明试成号'
+        subtitle: '渠道测试账号'
       },
+
+      // 弹窗状态
+      showAddMiniProgramModal: false,
       
       // 新功能列表
       newFeatures: [
@@ -117,10 +134,10 @@ export default {
       menuItems: [
         {
           id: 1,
-          title: '时一时',
-          icon: '⏰',
+          title: '扫一扫',
+          icon: '📷',
           iconColor: '#4A90E2',
-          route: '/time-management'
+          action: 'openScanner'
         },
         {
           id: 2,
@@ -132,31 +149,31 @@ export default {
         },
         {
           id: 3,
-          title: '客户文件管理',
+          title: '导出文件管理',
           icon: '📁',
           iconColor: '#FF9500',
-          route: '/customer-files'
+          route: '/export-files'
         },
         {
           id: 4,
-          title: '客加小程序',
+          title: '添加小程序',
           icon: '📱',
           iconColor: '#007AFF',
-          route: '/mini-program'
+          action: 'openAddMiniProgramModal'
         },
         {
           id: 5,
-          title: '指标条示设置',
+          title: '指标展示设置',
           icon: '⚙️',
           iconColor: '#8E8E93',
-          route: '/indicator-settings'
+          route: '/indicator-display-settings'
         },
         {
           id: 6,
-          title: '客户事件设置',
-          icon: '🔔',
+          title: '黑名单设置',
+          icon: '🚫',
           iconColor: '#FF3B30',
-          route: '/customer-events'
+          route: '/blacklist-settings'
         },
         {
           id: 7,
@@ -174,10 +191,10 @@ export default {
         },
         {
           id: 9,
-          title: '关于作者',
-          icon: '👨‍💻',
+          title: '关于超悦',
+          icon: '⭐',
           iconColor: '#AF52DE',
-          route: '/about-author'
+          route: '/about-chaoyue'
         },
         {
           id: 10,
@@ -222,6 +239,18 @@ export default {
       }
     },
     
+    // 打开扫一扫
+    openScanner() {
+      console.log('打开扫一扫功能')
+      // 检查是否支持摄像头
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        // 这里可以集成二维码扫描库，如 qrcode-reader
+        alert('扫一扫功能开发中，将支持二维码和条形码扫描')
+      } else {
+        alert('您的设备不支持摄像头功能')
+      }
+    },
+
     // 清除缓存
     clearCache() {
       if (confirm('确定要清除缓存吗？这将清除所有本地数据。')) {
@@ -258,6 +287,30 @@ export default {
           this.$router.push('/business-analysis')
           break
       }
+    },
+
+    // 显示添加小程序弹窗
+    openAddMiniProgramModal() {
+      this.showAddMiniProgramModal = true
+    },
+
+    // 隐藏添加小程序弹窗
+    hideAddMiniProgramModal() {
+      this.showAddMiniProgramModal = false
+    },
+
+    // 处理添加小程序
+    handleAddMiniProgram(miniProgramData) {
+      console.log('添加小程序:', miniProgramData)
+
+      // 这里可以调用API保存小程序信息
+      // 模拟保存成功
+      alert(`小程序"${miniProgramData.name}"已添加到桌面`)
+
+      // 隐藏弹窗
+      this.hideAddMiniProgramModal()
+
+      // 可以在这里更新本地数据或刷新页面
     }
   }
 }
@@ -275,44 +328,14 @@ export default {
 .user-info-card {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   padding: 40px 20px 30px;
-  display: flex;
-  align-items: center;
   position: relative;
   color: white;
 }
 
-.user-avatar {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 16px;
-}
-
-.avatar-icon {
-  font-size: 28px;
-}
-
-.user-details {
-  flex: 1;
-}
-
-.user-name {
-  font-size: 20px;
-  font-weight: 600;
-  margin: 0 0 4px 0;
-}
-
-.user-subtitle {
-  font-size: 14px;
-  opacity: 0.8;
-  margin: 0;
-}
-
 .edit-profile-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
   background: rgba(255, 255, 255, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.3);
   color: white;
@@ -325,6 +348,46 @@ export default {
 
 .edit-profile-btn:hover {
   background: rgba(255, 255, 255, 0.3);
+}
+
+.user-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.user-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.avatar-icon {
+  font-size: 36px;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.user-name {
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.user-subtitle {
+  font-size: 14px;
+  opacity: 0.8;
+  margin: 0;
 }
 
 /* 新功能区域 */
@@ -532,27 +595,29 @@ export default {
     padding: 30px 16px 24px;
   }
 
+  .edit-profile-btn {
+    top: 16px;
+    right: 16px;
+    padding: 6px 12px;
+    font-size: 11px;
+  }
+
   .user-avatar {
-    width: 50px;
-    height: 50px;
-    margin-right: 12px;
+    width: 70px;
+    height: 70px;
+    margin-bottom: 12px;
   }
 
   .avatar-icon {
-    font-size: 24px;
+    font-size: 32px;
   }
 
   .user-name {
-    font-size: 18px;
+    font-size: 20px;
   }
 
   .user-subtitle {
     font-size: 13px;
-  }
-
-  .edit-profile-btn {
-    padding: 6px 12px;
-    font-size: 11px;
   }
 
   .new-feature-section,

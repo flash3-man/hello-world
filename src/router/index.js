@@ -20,6 +20,10 @@ import UserProfile from '@/views/UserProfile.vue'
 import EditProfile from '@/views/EditProfile.vue'
 import Messages from '@/views/Messages.vue'
 import EmployeeProfit from '@/views/EmployeeProfit.vue'
+import IndicatorDisplaySettings from '@/views/IndicatorDisplaySettings.vue'
+import BlacklistSettings from '@/views/BlacklistSettings.vue'
+import FollowSettings from '@/views/FollowSettings.vue'
+import AboutChaoyue from '@/views/AboutChaoyue.vue'
 import TestTable from '@/views/TestTable.vue'
 import TestTableLayout from '@/views/TestTableLayout.vue'
 
@@ -58,6 +62,26 @@ const routes = [
     path: '/employee-profit',
     name: 'EmployeeProfit',
     component: EmployeeProfit
+  },
+  {
+    path: '/indicator-display-settings',
+    name: 'IndicatorDisplaySettings',
+    component: IndicatorDisplaySettings
+  },
+  {
+    path: '/blacklist-settings',
+    name: 'BlacklistSettings',
+    component: BlacklistSettings
+  },
+  {
+    path: '/follow-settings',
+    name: 'FollowSettings',
+    component: FollowSettings
+  },
+  {
+    path: '/about-chaoyue',
+    name: 'AboutChaoyue',
+    component: AboutChaoyue
   },
   {
     path: '/employee-performance',
