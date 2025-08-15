@@ -16,6 +16,14 @@ import DepartmentGoalDetail from '@/views/DepartmentGoalDetail.vue'
 import EmployeeDynamics from '@/views/EmployeeDynamics.vue'
 import VisitAnalysis from '@/views/VisitAnalysis.vue'
 import FinancialAnalysis from '@/views/FinancialAnalysis.vue'
+import UserProfile from '@/views/UserProfile.vue'
+import EditProfile from '@/views/EditProfile.vue'
+import Messages from '@/views/Messages.vue'
+import EmployeeProfit from '@/views/EmployeeProfit.vue'
+import IndicatorDisplaySettings from '@/views/IndicatorDisplaySettings.vue'
+import BlacklistSettings from '@/views/BlacklistSettings.vue'
+import FollowSettings from '@/views/FollowSettings.vue'
+import AboutChaoyue from '@/views/AboutChaoyue.vue'
 import TestTable from '@/views/TestTable.vue'
 import TestTableLayout from '@/views/TestTableLayout.vue'
 import ComprehensiveAnalysis from '@/views/ComprehensiveAnalysis.vue'
@@ -38,6 +46,46 @@ const routes = [
     path: '/financial-analysis',
     name: 'FinancialAnalysis',
     component: FinancialAnalysis
+  },
+  {
+    path: '/user-profile',
+    name: 'UserProfile',
+    component: UserProfile
+  },
+  {
+    path: '/edit-profile',
+    name: 'EditProfile',
+    component: EditProfile
+  },
+  {
+    path: '/messages',
+    name: 'Messages',
+    component: Messages
+  },
+  {
+    path: '/employee-profit',
+    name: 'EmployeeProfit',
+    component: EmployeeProfit
+  },
+  {
+    path: '/indicator-display-settings',
+    name: 'IndicatorDisplaySettings',
+    component: IndicatorDisplaySettings
+  },
+  {
+    path: '/blacklist-settings',
+    name: 'BlacklistSettings',
+    component: BlacklistSettings
+  },
+  {
+    path: '/follow-settings',
+    name: 'FollowSettings',
+    component: FollowSettings
+  },
+  {
+    path: '/about-chaoyue',
+    name: 'AboutChaoyue',
+    component: AboutChaoyue
   },
   {
     path: '/employee-performance',

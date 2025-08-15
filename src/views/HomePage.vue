@@ -558,7 +558,7 @@ export default {
         { id: 3, name: '员工整体分析', icon: '�', route: 'employee-analysis', selected: true },
         { id: 4, name: '目标管理', icon: '🎯', route: 'goal-management', selected: true },
         { id: 5, name: '我的经营月报', icon: '�', route: 'monthly-report', selected: true },
-        { id: 6, name: '铺市分析', icon: '🏪', route: 'market-analysis', selected: true },
+        { id: 6, name: '铺市分析', icon: '🏪', route: 'market-analysis', selected: false },
         { id: 7, name: '员工业绩汇总', icon: '📈', route: 'employee-performance', selected: true },
         { id: 8, name: '客户销退汇总', icon: '🔄', route: 'customer-return', selected: false },
         { id: 9, name: '客户管理', icon: '👤', route: 'customer-management', selected: false },
@@ -568,7 +568,8 @@ export default {
         { id: 13, name: '数据导出', icon: '📤', route: 'data-export', selected: false },
         { id: 14, name: '消息中心', icon: '📢', route: 'message-center', selected: false },
         { id: 15, name: '营销活动', icon: '🎪', route: 'marketing-activities', selected: false },
-        { id: 16, name: '供应商管理', icon: '🏭', route: 'supplier-management', selected: false }
+        { id: 16, name: '供应商管理', icon: '🏭', route: 'supplier-management', selected: false },
+        { id: 18, name: '员工利润', icon: '💵', route: 'employee-profit', selected: true }
       ],
       
       // 目标数据
