@@ -90,6 +90,63 @@ git config --global user.email "your.email@example.com"
 git config --list
 ```
 
+### Git更新问题解决方案
+
+#### 问题描述
+在国内网络环境下，使用 `git update-git-for-windows` 更新Git时经常遇到下载速度慢或失败的问题。
+
+#### 解决方案
+
+##### 方法1: 配置国内镜像源（推荐）
+```bash
+# 配置华为云镜像源
+git config --global url."https://mirrors.huaweicloud.com/git-for-windows/".insteadOf "https://github.com/git-for-windows/"
+
+# 配置GitHub镜像加速
+git config --global url."https://hub.fastgit.xyz/".insteadOf "https://github.com/"
+
+# 配置清华大学镜像源（备选）
+git config --global url."https://mirrors.tuna.tsinghua.edu.cn/git-for-windows/".insteadOf "https://github.com/git-for-windows/"
+```
+
+##### 方法2: 手动下载安装包
+从国内镜像站直接下载最新版本：
+- **华为云镜像**: https://mirrors.huaweicloud.com/git-for-windows/
+- **清华大学镜像**: https://mirrors.tuna.tsinghua.edu.cn/git-for-windows/
+- **阿里云镜像**: https://mirrors.aliyun.com/git-for-windows/
+
+下载对应版本的 `.exe` 安装包，直接安装即可。
+
+##### 方法3: 配置代理（如果有）
+```bash
+# HTTP代理
+git config --global http.proxy http://proxy-server:port
+
+# HTTPS代理
+git config --global https.proxy https://proxy-server:port
+
+# SOCKS5代理
+git config --global http.proxy socks5://proxy-server:port
+
+# 取消代理配置
+git config --global --unset http.proxy
+git config --global --unset https.proxy
+```
+
+##### 方法4: 使用便携版Git
+1. 从镜像站下载 `PortableGit-x.x.x-64-bit.7z.exe`
+2. 解压到指定目录（如 `D:\PortableGit`）
+3. 将解压目录的 `bin` 文件夹添加到系统PATH环境变量
+
+#### 验证更新
+```bash
+# 检查Git版本
+git --version
+
+# 查看配置的镜像源
+git config --global --list | grep url
+```
+
 ### 基础操作
 
 #### 1. 初始化仓库
@@ -133,6 +190,7 @@ git log --follow src/views/HomePage.vue
 ```
 
 ### 高级Git操作
+
 
 #### 1. 分支管理
 
