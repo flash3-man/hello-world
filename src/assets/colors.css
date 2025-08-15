@@ -1,0 +1,247 @@
+/* 
+ * 全局配色方案
+ * 基于经营分析APP界面设计的配色规范
+ */
+
+:root {
+  /* === 主色调 === */
+  --primary-blue-start: #4A90E2;
+  --primary-blue-end: #2E5BBA;
+  --primary-white: #FFFFFF;
+  
+  /* === 强调色 === */
+  --accent-orange: #FF8C42;
+  --accent-orange-hover: #FF6B1A;
+  --success-green: #4CAF50;
+  --success-green-hover: #45A049;
+  
+  /* === 辅助色 === */
+  --dark-blue: #1E3A8A;
+  --light-gray: #F5F5F5;
+  --text-gray: #666666;
+  --text-dark: #333333;
+  --border-gray: #e0e0e0;
+  
+  /* === 状态颜色 === */
+  --error-red: #ff4d4f;
+  --error-red-light: #ff7875;
+  --warning-orange: #ff9900;
+  --warning-orange-light: #ffb84d;
+  --info-blue: #4A90E2;
+  --info-blue-light: #74A9E8;
+  
+  /* === 渐变定义 === */
+  --primary-gradient: linear-gradient(135deg, var(--primary-blue-start) 0%, var(--primary-blue-end) 100%);
+  --orange-gradient: linear-gradient(135deg, var(--accent-orange) 0%, var(--accent-orange-hover) 100%);
+  --green-gradient: linear-gradient(135deg, var(--success-green) 0%, var(--success-green-hover) 100%);
+  
+  /* === 阴影定义 === */
+  --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --shadow-heavy: 0 8px 24px rgba(0, 0, 0, 0.2);
+  --shadow-blue: 0 2px 8px rgba(74, 144, 226, 0.3);
+  --shadow-orange: 0 2px 8px rgba(255, 140, 66, 0.3);
+  --shadow-green: 0 2px 8px rgba(76, 175, 80, 0.3);
+  
+  /* === 透明度变量 === */
+  --overlay-dark: rgba(0, 0, 0, 0.5);
+  --overlay-light: rgba(0, 0, 0, 0.3);
+  --glass-light: rgba(255, 255, 255, 0.1);
+  --glass-medium: rgba(255, 255, 255, 0.15);
+  --glass-heavy: rgba(255, 255, 255, 0.25);
+}
+
+/* === 通用样式类 === */
+.primary-gradient {
+  background: var(--primary-gradient);
+}
+
+.orange-gradient {
+  background: var(--orange-gradient);
+}
+
+.green-gradient {
+  background: var(--green-gradient);
+}
+
+.text-primary {
+  color: var(--primary-blue-start);
+}
+
+.text-orange {
+  color: var(--accent-orange);
+}
+
+.text-green {
+  color: var(--success-green);
+}
+
+.text-gray {
+  color: var(--text-gray);
+}
+
+.text-dark {
+  color: var(--text-dark);
+}
+
+.bg-primary {
+  background-color: var(--primary-blue-start);
+}
+
+.bg-orange {
+  background-color: var(--accent-orange);
+}
+
+.bg-green {
+  background-color: var(--success-green);
+}
+
+.bg-dark-blue {
+  background-color: var(--dark-blue);
+}
+
+.bg-light-gray {
+  background-color: var(--light-gray);
+}
+
+.shadow-light {
+  box-shadow: var(--shadow-light);
+}
+
+.shadow-medium {
+  box-shadow: var(--shadow-medium);
+}
+
+.shadow-heavy {
+  box-shadow: var(--shadow-heavy);
+}
+
+.shadow-blue {
+  box-shadow: var(--shadow-blue);
+}
+
+.shadow-orange {
+  box-shadow: var(--shadow-orange);
+}
+
+.shadow-green {
+  box-shadow: var(--shadow-green);
+}
+
+/* === 按钮样式 === */
+.btn-primary {
+  background-color: var(--primary-blue-start);
+  color: var(--primary-white);
+  border: none;
+  transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-blue-end);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--primary-blue-start);
+  border: 1px solid var(--primary-blue-start);
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+  background-color: var(--primary-blue-start);
+  color: var(--primary-white);
+}
+
+.btn-success {
+  background-color: var(--success-green);
+  color: var(--primary-white);
+  border: none;
+  transition: background-color 0.2s;
+}
+
+.btn-success:hover {
+  background-color: var(--success-green-hover);
+}
+
+.btn-warning {
+  background-color: var(--accent-orange);
+  color: var(--primary-white);
+  border: none;
+  transition: background-color 0.2s;
+}
+
+.btn-warning:hover {
+  background-color: var(--accent-orange-hover);
+}
+
+.btn-error {
+  background-color: var(--error-red);
+  color: var(--primary-white);
+  border: none;
+  transition: background-color 0.2s;
+}
+
+.btn-error:hover {
+  background-color: var(--error-red-light);
+}
+
+/* === 卡片样式 === */
+.card-glass {
+  background: var(--glass-medium);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-light);
+}
+
+.card-white {
+  background-color: var(--primary-white);
+  box-shadow: var(--shadow-light);
+}
+
+/* === 输入框样式 === */
+.input-primary:focus {
+  border-color: var(--primary-blue-start);
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+/* === 导航样式 === */
+.nav-primary {
+  background-color: var(--dark-blue);
+}
+
+.nav-item-active {
+  color: var(--accent-orange);
+}
+
+/* === 状态指示器 === */
+.status-success {
+  color: var(--success-green);
+}
+
+.status-warning {
+  color: var(--accent-orange);
+}
+
+.status-error {
+  color: var(--error-red);
+}
+
+.status-info {
+  color: var(--info-blue);
+}
+
+/* === 进度条样式 === */
+.progress-primary {
+  background-color: var(--primary-blue-start);
+}
+
+.progress-success {
+  background-color: var(--success-green);
+}
+
+.progress-warning {
+  background-color: var(--accent-orange);
+}
+
+.progress-error {
+  background-color: var(--error-red);
+}

@@ -21,6 +21,7 @@ import FocusAnalysis from '@/views/FocusAnalysis.vue'
 import OrderAnalysis from '@/views/OrderAnalysis.vue'
 import DistributionAnalysis from '@/views/DistributionAnalysis.vue'
 
+
 const routes = [
   {
     path: '/',
@@ -117,6 +118,7 @@ const routes = [
     name: 'FocusAnalysis',
     component: FocusAnalysis
   },
+
   // 带参数的路由
   {
     path: '/employee-analysis/:employeeId',

@@ -2,10 +2,12 @@
   <div class="home-page">
     <!-- 顶部区域：小人Logo + 动态预警 + 搜索 -->
     <div class="top-navigation-bar">
-      <!-- 左侧：小人Logo（语音播报入口） -->
+      <!-- 左侧：AI助手Logo（语音播报入口） -->
       <div class="voice-info-logo" @click="playVoiceInfo">
         <div class="logo-icon" :class="{ 'has-unread': hasUnreadInfo }">
-          👤
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1H5C3.89 1 3 1.89 3 3V21C3 22.11 3.89 23 5 23H11V21H5V3H13V9H21ZM14 21V19H16L19 22H17V24H21V22L18 19H21V17H14V21Z"/>
+          </svg>
         </div>
         <div v-if="hasUnreadInfo" class="unread-dot"></div>
       </div>
@@ -18,7 +20,11 @@
       <!-- 右侧：搜索功能 -->
       <div class="search-container" @click="openSearchModal">
         <span class="search-placeholder">搜索</span>
-        <div class="search-icon">🔍</div>
+        <div class="search-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+          </svg>
+        </div>
       </div>
     </div>
 
@@ -27,7 +33,12 @@
       <div class="search-modal" @click.stop>
         <div class="search-modal-header">
           <h3>搜索</h3>
-          <button class="close-btn" @click="closeSearchModal">✕</button>
+          <button class="close-btn" @click="closeSearchModal">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
         </div>
         <div class="search-modal-content">
           <div class="search-input-container">
@@ -63,7 +74,11 @@
           
           <!-- 无结果提示 -->
           <div v-else-if="searchKeyword && hasSearched" class="no-results">
-            <div class="no-results-icon">🔍</div>
+            <div class="no-results-icon">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor" opacity="0.3">
+                <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+              </svg>
+            </div>
             <div class="no-results-text">未找到相关结果</div>
             <div class="no-results-tip">请尝试其他关键词</div>
           </div>
@@ -184,7 +199,12 @@
       <div class="data-modal" @click.stop>
         <div class="modal-header">
           <h3>{{ currentDataDetail.title }}</h3>
-          <button class="modal-close" @click="showDataModal = false">✕</button>
+          <button class="modal-close" @click="showDataModal = false">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
         </div>
         <div class="modal-content">
           <div class="calculation-logic">
@@ -228,7 +248,8 @@
             class="function-item"
             @click="navigateToFunction(func.route)"
           >
-            <div class="function-icon">{{ func.icon }}</div>
+            <div class="function-icon" v-html="getIconComponent(func.icon).template">
+            </div>
             <div class="function-name">{{ func.name }}</div>
           </div>
         </div>
@@ -241,7 +262,8 @@
             class="function-item"
             @click="navigateToFunction(func.route)"
           >
-            <div class="function-icon">{{ func.icon }}</div>
+            <div class="function-icon" v-html="getIconComponent(func.icon).template">
+            </div>
             <div class="function-name">{{ func.name }}</div>
           </div>
         </div>
@@ -253,7 +275,12 @@
       <div class="function-config-panel" @click.stop>
         <div class="config-header">
           <h3>功能配置</h3>
-          <button class="config-close" @click="showFunctionConfig = false">✕</button>
+          <button class="config-close" @click="showFunctionConfig = false">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
         </div>
         
         <div class="config-content">
@@ -270,9 +297,14 @@
                 @dragover.prevent
                 @drop="handleDrop(index)"
               >
-                <span class="function-icon">{{ func.icon }}</span>
+                <span class="function-icon-small" v-html="getIconComponent(func.icon).template"></span>
                 <span class="function-name">{{ func.name }}</span>
-                <button class="remove-btn" @click="removeFunction(func.id)">✕</button>
+                <button class="remove-btn" @click="removeFunction(func.id)">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                </button>
               </div>
             </div>
           </div>
@@ -295,9 +327,14 @@
                 class="available-function-item"
                 @click="addFunction(func.id)"
               >
-                <span class="function-icon">{{ func.icon }}</span>
+                <span class="function-icon-small" v-html="getIconComponent(func.icon).template"></span>
                 <span class="function-name">{{ func.name }}</span>
-                <span class="add-btn">+</span>
+                <span class="add-btn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                  </svg>
+                </span>
               </div>
             </div>
           </div>
@@ -332,9 +369,27 @@
               <span class="goal-period">{{ goal.period }}</span>
             </div>
             <div class="goal-operations" v-if="goal.hasPermission">
-              <button class="edit-goal" @click.stop="editGoal(goal.id)">✏️</button>
-              <button class="delete-goal" @click.stop="deleteGoal(goal.id)">🗑️</button>
-              <button class="more-goal" @click.stop="moreGoalOptions(goal.id)">⋯</button>
+              <button class="edit-goal" @click.stop="editGoal(goal.id)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+              </button>
+              <button class="delete-goal" @click.stop="deleteGoal(goal.id)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <polyline points="3 6 5 6 21 6"/>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                  <line x1="10" y1="11" x2="10" y2="17"/>
+                  <line x1="14" y1="11" x2="14" y2="17"/>
+                </svg>
+              </button>
+              <button class="more-goal" @click.stop="moreGoalOptions(goal.id)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <circle cx="12" cy="12" r="1"/>
+                  <circle cx="19" cy="12" r="1"/>
+                  <circle cx="5" cy="12" r="1"/>
+                </svg>
+              </button>
             </div>
           </div>
 
@@ -361,7 +416,11 @@
             <div class="completion-indicator">
               <div class="completion-text">
                 <span>完成率：{{ goal.completionRate }}</span>
-                <span class="achievement-icon" v-if="parseFloat(goal.completionRate) >= 100">🏆</span>
+                <span class="achievement-icon" v-if="parseFloat(goal.completionRate) >= 100">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
+                </span>
               </div>
               <div class="progress-visual">
                 <div 
@@ -394,36 +453,52 @@
 
     <!-- 五、底部导航栏（全局页面切换） -->
     <div class="bottom-navigation">
-      <div 
+      <div
         class="nav-item"
         :class="{ active: currentPage === 'home' }"
         @click="navigateToPage('home')"
       >
-        <div class="nav-icon">🏠</div>
+        <div class="nav-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+          </svg>
+        </div>
         <div class="nav-label">首页</div>
       </div>
-      <div 
+      <div
         class="nav-item"
         :class="{ active: currentPage === 'focus' }"
         @click="navigateToPage('focus')"
       >
-        <div class="nav-icon">⭐</div>
+        <div class="nav-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+          </svg>
+        </div>
         <div class="nav-label">关注</div>
       </div>
-      <div 
+      <div
         class="nav-item"
         :class="{ active: currentPage === 'analysis' }"
         @click="navigateToPage('analysis')"
       >
-        <div class="nav-icon">📊</div>
+        <div class="nav-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M22,21H2V3H4V19H6V10H10V19H12V6H16V19H18V14H22V21Z"/>
+          </svg>
+        </div>
         <div class="nav-label">解读</div>
       </div>
-      <div 
+      <div
         class="nav-item"
         :class="{ active: currentPage === 'profile' }"
         @click="navigateToPage('profile')"
       >
-        <div class="nav-icon">👤</div>
+        <div class="nav-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"/>
+          </svg>
+        </div>
         <div class="nav-label">我的</div>
       </div>
     </div>
@@ -551,22 +626,22 @@ export default {
       
       // 快速功能列表
       allFunctionsList: [
-        { id: 1, name: '员工月报', icon: '👥', route: 'employee-report', selected: true },
-        { id: 2, name: '业绩变化分析', icon: '📊', route: 'performance-analysis', selected: true },
-        { id: 3, name: '员工整体分析', icon: '�', route: 'employee-analysis', selected: true },
-        { id: 4, name: '目标管理', icon: '🎯', route: 'goal-management', selected: true },
-        { id: 5, name: '我的经营月报', icon: '�', route: 'monthly-report', selected: true },
-        { id: 6, name: '铺市分析', icon: '🏪', route: 'market-analysis', selected: true },
-        { id: 7, name: '员工业绩汇总', icon: '📈', route: 'employee-performance', selected: true },
-        { id: 8, name: '客户销退汇总', icon: '🔄', route: 'customer-return', selected: true },
-        { id: 9, name: '客户管理', icon: '👤', route: 'customer-management', selected: false },
-        { id: 10, name: '库存管理', icon: '📦', route: 'inventory-management', selected: false },
-        { id: 11, name: '财务报表', icon: '💰', route: 'financial-reports', selected: false },
-        { id: 12, name: '系统设置', icon: '⚙️', route: 'system-settings', selected: false },
-        { id: 13, name: '数据导出', icon: '📤', route: 'data-export', selected: false },
-        { id: 14, name: '消息中心', icon: '📢', route: 'message-center', selected: false },
-        { id: 15, name: '营销活动', icon: '🎪', route: 'marketing-activities', selected: false },
-        { id: 16, name: '供应商管理', icon: '🏭', route: 'supplier-management', selected: false }
+        { id: 1, name: '员工月报', icon: 'users', route: 'employee-report', selected: true },
+        { id: 2, name: '业绩变化分析', icon: 'trending-up', route: 'performance-analysis', selected: true },
+        { id: 3, name: '员工整体分析', icon: 'user-check', route: 'employee-analysis', selected: true },
+        { id: 4, name: '目标管理', icon: 'target', route: 'goal-management', selected: true },
+        { id: 5, name: '我的经营月报', icon: 'file-text', route: 'monthly-report', selected: true },
+        { id: 6, name: '铺市分析', icon: 'map-pin', route: 'market-analysis', selected: true },
+        { id: 7, name: '员工业绩汇总', icon: 'bar-chart', route: 'employee-performance', selected: true },
+        { id: 8, name: '客户销退汇总', icon: 'refresh-cw', route: 'customer-return', selected: true },
+        { id: 9, name: '客户管理', icon: 'user', route: 'customer-management', selected: false },
+        { id: 10, name: '库存管理', icon: 'package', route: 'inventory-management', selected: false },
+        { id: 11, name: '财务报表', icon: 'dollar-sign', route: 'financial-reports', selected: false },
+        { id: 12, name: '系统设置', icon: 'settings', route: 'system-settings', selected: false },
+        { id: 13, name: '数据导出', icon: 'download', route: 'data-export', selected: false },
+        { id: 14, name: '消息中心', icon: 'bell', route: 'message-center', selected: false },
+        { id: 15, name: '营销活动', icon: 'megaphone', route: 'marketing-activities', selected: false },
+        { id: 16, name: '供应商管理', icon: 'truck', route: 'supplier-management', selected: false }
       ],
       
       // 目标数据
@@ -1075,6 +1150,64 @@ export default {
           console.error('Failed to load function config:', e)
         }
       }
+    },
+
+    // 获取图标组件
+    getIconComponent(iconName) {
+      const iconMap = {
+        'users': () => `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M16 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zM4 18v-4c0-2.21 1.79-4 4-4s4 1.79 4 4v4h-8zM10 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2z"/>
+        </svg>`,
+        'trending-up': () => `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
+        </svg>`,
+        'user-check': () => `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 13L11 9L7.91 12.09C7.66 10.78 6.26 9.85 5 10.15V8C5 6.9 5.9 6 7 6H17C18.1 6 19 6.9 19 8V9H21ZM17.71 11.29L16.29 12.71L18.59 15L23.29 10.29L21.88 8.88L18.59 12.17L17.71 11.29Z"/>
+        </svg>`,
+        'target': () => `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,6A6,6 0 0,0 6,12A6,6 0 0,0 12,18A6,6 0 0,0 18,12A6,6 0 0,0 12,6M12,8A4,4 0 0,1 16,12A4,4 0 0,1 12,16A4,4 0 0,1 8,12A4,4 0 0,1 12,8M12,10A2,2 0 0,0 10,12A2,2 0 0,0 12,14A2,2 0 0,0 14,12A2,2 0 0,0 12,10Z"/>
+        </svg>`,
+        'file-text': () => `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+        </svg>`,
+        'map-pin': () => `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12,11.5A2.5,2.5 0 0,1 9.5,9A2.5,2.5 0 0,1 12,6.5A2.5,2.5 0 0,1 14.5,9A2.5,2.5 0 0,1 12,11.5M12,2A7,7 0 0,0 5,9C5,14.25 12,22 12,22S19,14.25 19,9A7,7 0 0,0 12,2Z"/>
+        </svg>`,
+        'bar-chart': () => `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M22,21H2V3H4V19H6V10H10V19H12V6H16V19H18V14H22V21Z"/>
+        </svg>`,
+        'refresh-cw': () => `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12,18A6,6 0 0,1 6,12C6,8.69 8.69,6 12,6A6,6 0 0,1 18,12H16A4,4 0 0,0 12,8A4,4 0 0,0 8,12A4,4 0 0,0 12,16H16L12,20L8,16H12Z"/>
+        </svg>`,
+        'user': () => `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"/>
+        </svg>`,
+        'package': () => `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12,2L2,7L12,12L22,7L12,2M2,17L12,22L22,17M2,12L12,17L22,12"/>
+        </svg>`,
+        'dollar-sign': () => `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M7,15H9C9,16.08 10.37,17 12,17C13.63,17 15,16.08 15,15C15,13.9 13.96,13.5 11.76,12.97C9.64,12.44 7,11.78 7,9C7,7.21 8.47,5.69 10.5,5.18V3H13.5V5.18C15.53,5.69 17,7.21 17,9H15C15,7.92 13.63,7 12,7C10.37,7 9,7.92 9,9C9,10.1 10.04,10.5 12.24,11.03C14.36,11.56 17,12.22 17,15C17,16.79 15.53,18.31 13.5,18.82V21H10.5V18.82C8.47,18.31 7,16.79 7,15Z"/>
+        </svg>`,
+        'settings': () => `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.22,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.22,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.68 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"/>
+        </svg>`,
+        'download': () => `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/>
+        </svg>`,
+        'bell': () => `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M21,19V20H3V19L5,17V11C5,7.9 7.03,5.17 10,4.29C10,4.19 10,4.1 10,4A2,2 0 0,1 12,2A2,2 0 0,1 14,4C14,4.1 14,4.19 14,4.29C16.97,5.17 19,7.9 19,11V17L21,19M14,21A2,2 0 0,1 12,23A2,2 0 0,1 10,21"/>
+        </svg>`,
+        'megaphone': () => `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12,8H4A2,2 0 0,0 2,10V14A2,2 0 0,0 4,16H5V20A1,1 0 0,0 6,21H8A1,1 0 0,0 9,20V16H12L17,20V4L12,8M21.5,12C21.5,13.71 20.54,15.26 19,16V8C20.53,8.75 21.5,10.3 21.5,12Z"/>
+        </svg>`,
+        'truck': () => `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M18,18.5A1.5,1.5 0 0,1 16.5,17A1.5,1.5 0 0,1 18,15.5A1.5,1.5 0 0,1 19.5,17A1.5,1.5 0 0,1 18,18.5M19.5,9.5L21.46,12H17V9.5M6,18.5A1.5,1.5 0 0,1 4.5,17A1.5,1.5 0 0,1 6,15.5A1.5,1.5 0 0,1 7.5,17A1.5,1.5 0 0,1 6,18.5M20,8H17V4H3C1.89,4 1,4.89 1,6V17H3A3,3 0 0,0 6,20A3,3 0 0,0 9,17H15A3,3 0 0,0 18,20A3,3 0 0,0 21,17H23V12L20,8Z"/>
+        </svg>`
+      }
+
+      return {
+        template: iconMap[iconName] ? iconMap[iconName]() : `<div>${iconName}</div>`
+      }
     }
   },
   mounted() {
@@ -1130,7 +1263,7 @@ export default {
 .logo-icon {
   width: 36px;
   height: 36px;
-  background: linear-gradient(135deg, #1677ff 0%, #0e5fd8 100%);
+  background: linear-gradient(135deg, #FF8C42 0%, #FF6B1A 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1138,26 +1271,26 @@ export default {
   font-size: 18px;
   color: white;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(22, 119, 255, 0.3);
+  box-shadow: 0 2px 8px rgba(255, 140, 66, 0.3);
 }
 
 .logo-icon.has-unread {
   animation: pulse 2s infinite;
-  box-shadow: 0 0 15px rgba(22, 119, 255, 0.6);
+  box-shadow: 0 0 15px rgba(255, 140, 66, 0.6);
 }
 
 @keyframes pulse {
   0% {
     transform: scale(1);
-    box-shadow: 0 0 15px rgba(22, 119, 255, 0.6);
+    box-shadow: 0 0 15px rgba(255, 140, 66, 0.6);
   }
   50% {
     transform: scale(1.05);
-    box-shadow: 0 0 20px rgba(22, 119, 255, 0.8);
+    box-shadow: 0 0 20px rgba(255, 140, 66, 0.8);
   }
   100% {
     transform: scale(1);
-    box-shadow: 0 0 15px rgba(22, 119, 255, 0.6);
+    box-shadow: 0 0 15px rgba(255, 140, 66, 0.6);
   }
 }
 
@@ -1280,9 +1413,9 @@ export default {
 }
 
 .search-container.active {
-  border-color: #1677ff;
+  border-color: #4A90E2;
   background-color: #ffffff;
-  box-shadow: 0 0 10px rgba(22, 119, 255, 0.2);
+  box-shadow: 0 0 10px rgba(74, 144, 226, 0.2);
 }
 
 .search-input {
@@ -1322,7 +1455,7 @@ export default {
 }
 
 .search-container.active .search-icon {
-  color: #1677ff;
+  color: #4A90E2;
 }
 
 /* 搜索弹窗样式 */
@@ -1370,15 +1503,18 @@ export default {
   background: none;
   border: none;
   color: #999999;
-  font-size: 20px;
   cursor: pointer;
-  padding: 4px;
-  border-radius: 4px;
-  transition: background-color 0.2s;
+  padding: 6px;
+  border-radius: 6px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .close-btn:hover {
   background-color: #f0f0f0;
+  color: #666666;
 }
 
 .search-modal-content {
@@ -1404,11 +1540,11 @@ export default {
 }
 
 .search-modal-input:focus {
-  border-color: #1677ff;
+  border-color: #4A90E2;
 }
 
 .search-btn {
-  background-color: #1677ff;
+  background-color: #4A90E2;
   color: white;
   border: none;
   border-radius: 8px;
@@ -1419,7 +1555,7 @@ export default {
 }
 
 .search-btn:hover {
-  background-color: #0958d9;
+  background-color: #2E5BBA;
 }
 
 .search-results-section {
@@ -1452,13 +1588,13 @@ export default {
 }
 
 .search-result-item:hover {
-  border-color: #1677ff;
+  border-color: #4A90E2;
   background-color: #f8fbff;
 }
 
 .result-type {
   font-size: 12px;
-  color: #1677ff;
+  color: #4A90E2;
   font-weight: 600;
 }
 
@@ -1480,8 +1616,10 @@ export default {
 }
 
 .no-results-icon {
-  font-size: 48px;
   margin-bottom: 16px;
+  display: flex;
+  justify-content: center;
+  color: #999999;
 }
 
 .no-results-text {
@@ -1606,7 +1744,7 @@ export default {
 /* === 二、核心数据看板（经营核心数据） === */
 .data-dashboard-section {
   margin-top: 56px; /* 为顶部固定区域留空间 */
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #4A90E2 0%, #2E5BBA 100%);
   padding: 24px 16px;
   color: white;
 }
@@ -1812,10 +1950,19 @@ export default {
 .modal-close {
   background: none;
   border: none;
-  font-size: 20px;
   color: #999999;
   cursor: pointer;
-  padding: 4px;
+  padding: 6px;
+  border-radius: 6px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-close:hover {
+  background-color: #f0f0f0;
+  color: #666666;
 }
 
 .modal-content {
@@ -1879,7 +2026,7 @@ export default {
 
 .view-detail-btn {
   width: 100%;
-  background-color: #1677ff;
+  background-color: #4A90E2;
   border: none;
   padding: 12px;
   border-radius: 8px;
@@ -1890,7 +2037,7 @@ export default {
 }
 
 .view-detail-btn:hover {
-  background-color: #0e5fd8;
+  background-color: #2E5BBA;
 }
 
 /* === 三、快速功能入口区域（工具快捷触达区） === */
@@ -1915,17 +2062,17 @@ export default {
 
 .all-functions-btn {
   background: none;
-  border: 1px solid #1677ff;
+  border: 1px solid #4A90E2;
   padding: 8px 16px;
   border-radius: 20px;
-  color: #1677ff;
+  color: #4A90E2;
   font-size: 14px;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .all-functions-btn:hover {
-  background-color: #1677ff;
+  background-color: #4A90E2;
   color: white;
 }
 
@@ -1960,19 +2107,48 @@ export default {
 .function-icon {
   width: 48px;
   height: 48px;
-  background-color: #1677ff;
-  color: white;
-  border-radius: 50%;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 20px;
   margin-bottom: 8px;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
+  color: white;
+}
+
+/* 不同功能使用不同颜色 */
+.function-item:nth-child(1) .function-icon { background: linear-gradient(135deg, #FF8C42 0%, #FF6B1A 100%); }
+.function-item:nth-child(2) .function-icon { background: linear-gradient(135deg, #4CAF50 0%, #45A049 100%); }
+.function-item:nth-child(3) .function-icon { background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%); }
+.function-item:nth-child(4) .function-icon { background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%); }
+.function-item:nth-child(5) .function-icon { background: linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%); }
+.function-item:nth-child(6) .function-icon { background: linear-gradient(135deg, #00BCD4 0%, #0097A7 100%); }
+.function-item:nth-child(7) .function-icon { background: linear-gradient(135deg, #795548 0%, #5D4037 100%); }
+.function-item:nth-child(8) .function-icon { background: linear-gradient(135deg, #607D8B 0%, #455A64 100%); }
+
+.function-icon svg {
+  width: 24px;
+  height: 24px;
 }
 
 .function-item:hover .function-icon {
-  background-color: #0e5fd8;
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.function-icon-small {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4CAF50;
+}
+
+.function-icon-small svg {
+  width: 16px;
+  height: 16px;
 }
 
 .function-name {
@@ -2025,10 +2201,19 @@ export default {
 .config-close {
   background: none;
   border: none;
-  font-size: 20px;
   color: #999999;
   cursor: pointer;
-  padding: 4px;
+  padding: 6px;
+  border-radius: 6px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.config-close:hover {
+  background-color: #f0f0f0;
+  color: #666666;
 }
 
 .config-content {
@@ -2244,15 +2429,36 @@ export default {
 .edit-goal, .delete-goal, .more-goal {
   background: none;
   border: none;
-  font-size: 16px;
   cursor: pointer;
-  padding: 4px;
-  border-radius: 4px;
-  transition: background-color 0.2s;
+  padding: 6px;
+  border-radius: 6px;
+  transition: all 0.2s;
+  color: #666666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.edit-goal:hover, .delete-goal:hover, .more-goal:hover {
-  background-color: #f0f0f0;
+.edit-goal:hover {
+  background-color: rgba(74, 144, 226, 0.1);
+  color: #4A90E2;
+}
+
+.delete-goal:hover {
+  background-color: rgba(255, 77, 79, 0.1);
+  color: #ff4d4f;
+}
+
+.more-goal:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+  color: #333333;
+}
+
+.achievement-icon {
+  color: #FFD700;
+  margin-left: 8px;
+  display: inline-flex;
+  align-items: center;
 }
 
 /* 2. 核心数据进度栏 */
@@ -2349,17 +2555,17 @@ export default {
 .department-performance-btn, .employee-performance-btn {
   flex: 1;
   background: none;
-  border: 1px solid #1677ff;
+  border: 1px solid #4A90E2;
   padding: 8px 16px;
   border-radius: 20px;
-  color: #1677ff;
+  color: #4A90E2;
   font-size: 12px;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .department-performance-btn:hover, .employee-performance-btn:hover {
-  background-color: #1677ff;
+  background-color: #4A90E2;
   color: white;
 }
 
@@ -2370,7 +2576,7 @@ export default {
   left: 0;
   right: 0;
   height: 60px;
-  background-color: #ffffff;
+  background-color: #1E3A8A;
   display: flex;
   border-top: 1px solid #e0e0e0;
   z-index: 1000;
@@ -2389,11 +2595,11 @@ export default {
 }
 
 .nav-item:hover {
-  background-color: #f8f9fa;
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .nav-item.active {
-  color: #1677ff;
+  color: #FF8C42;
 }
 
 .nav-item.active .nav-icon {
@@ -2403,15 +2609,16 @@ export default {
 .nav-icon {
   font-size: 20px;
   transition: transform 0.2s;
+  color: #FFFFFF;
 }
 
 .nav-label {
   font-size: 12px;
-  color: #666666;
+  color: #FFFFFF;
 }
 
 .nav-item.active .nav-label {
-  color: #1677ff;
+  color: #FF8C42;
   font-weight: bold;
 }
 
