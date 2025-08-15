@@ -20,15 +20,15 @@
     <!-- 日期对比范围 -->
     <div class="date-comparison-section">
       <div class="date-group">
-        <div class="date-item" @click="openDatePicker('current')">
+        <div class="date-item left-date" @click="openDatePicker('current')">
           <span class="date-label">统计时间：</span>
           <span class="date-value">{{ currentDateDisplay }}</span>
           <svg class="dropdown-icon" width="12" height="8" viewBox="0 0 12 8">
             <path d="M1 1L6 6L11 1"/>
           </svg>
         </div>
-        
-        <div class="date-item" @click="openDatePicker('compare')">
+
+        <div class="date-item right-date" @click="openDatePicker('compare')">
           <span class="date-label">对比时间：</span>
           <span class="date-value">{{ compareDateDisplay }}</span>
           <svg class="dropdown-icon" width="12" height="8" viewBox="0 0 12 8">
@@ -42,16 +42,21 @@
     <div class="analysis-selection-section">
       <div class="selection-group">
         <div class="selection-item" @click="openMetricSelector">
-          <span class="selection-label">分析指标：</span>
-          <span class="selection-value">{{ selectedMetricText }}</span>
+          <span class="selection-label">{{ selectedMetricText }}</span>
           <svg class="dropdown-icon" width="12" height="8" viewBox="0 0 12 8">
             <path d="M1 1L6 6L11 1"/>
           </svg>
         </div>
-        
+
         <div class="selection-item" @click="openDimensionSelector">
-          <span class="selection-label">分析维度：</span>
-          <span class="selection-value">{{ selectedDimensionText }}</span>
+          <span class="selection-label">{{ selectedDimensionText }}</span>
+          <svg class="dropdown-icon" width="12" height="8" viewBox="0 0 12 8">
+            <path d="M1 1L6 6L11 1"/>
+          </svg>
+        </div>
+
+        <div class="selection-item" @click="openFilterSelector">
+          <span class="selection-label">筛选</span>
           <svg class="dropdown-icon" width="12" height="8" viewBox="0 0 12 8">
             <path d="M1 1L6 6L11 1"/>
           </svg>
@@ -267,7 +272,7 @@
 
     <!-- 日期选择弹窗 -->
     <div v-if="showDatePicker" class="date-picker-overlay" @click="hideDatePicker">
-      <div class="date-picker-content" @click.stop>
+      <div class="date-picker-content bottom-sheet" @click.stop>
         <div class="date-picker-header">
           <h3 class="picker-title">{{ datePickerTitle }}</h3>
           <button class="picker-close" @click="hideDatePicker">×</button>
@@ -338,15 +343,15 @@
 
     <!-- 指标选择弹窗 -->
     <div v-if="showMetricSelector" class="selector-overlay" @click="hideMetricSelector">
-      <div class="selector-content" @click.stop>
+      <div class="selector-content bottom-sheet" @click.stop>
         <div class="selector-header">
           <h3 class="selector-title">选择分析指标</h3>
           <button class="selector-close" @click="hideMetricSelector">×</button>
         </div>
         <div class="selector-body">
           <div class="selector-options">
-            <div 
-              v-for="metric in availableMetrics" 
+            <div
+              v-for="metric in availableMetrics"
               :key="metric.key"
               :class="['selector-option', { selected: selectedMetric === metric.key }]"
               @click="selectMetric(metric.key)"
@@ -363,15 +368,15 @@
 
     <!-- 维度选择弹窗 -->
     <div v-if="showDimensionSelector" class="selector-overlay" @click="hideDimensionSelector">
-      <div class="selector-content" @click.stop>
+      <div class="selector-content bottom-sheet" @click.stop>
         <div class="selector-header">
           <h3 class="selector-title">选择分析维度</h3>
           <button class="selector-close" @click="hideDimensionSelector">×</button>
         </div>
         <div class="selector-body">
           <div class="selector-options">
-            <div 
-              v-for="dimension in availableDimensions" 
+            <div
+              v-for="dimension in availableDimensions"
               :key="dimension.key"
               :class="['selector-option', { selected: selectedDimension === dimension.key }]"
               @click="selectDimension(dimension.key)"
@@ -381,6 +386,60 @@
                 <path d="M13.5 3L6 10.5L2.5 7"/>
               </svg>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 筛选选择弹窗 -->
+    <div v-if="showFilterSelector" class="selector-overlay" @click="hideFilterSelector">
+      <div class="selector-content bottom-sheet" @click.stop>
+        <div class="selector-header">
+          <h3 class="selector-title">筛选条件</h3>
+          <button class="selector-close" @click="hideFilterSelector">×</button>
+        </div>
+        <div class="selector-body">
+          <div class="filter-categories">
+            <div class="filter-category">
+              <h4 class="category-title">基础筛选</h4>
+              <div class="filter-options">
+                <div
+                  v-for="filter in basicFilters"
+                  :key="filter.key"
+                  class="filter-option-item"
+                  @click="openFilterModal(filter.key)"
+                >
+                  <span class="filter-name">{{ filter.label }}</span>
+                  <span class="filter-value">{{ getFilterDisplayValue(filter.key) }}</span>
+                  <svg class="arrow-icon" width="12" height="8" viewBox="0 0 12 8">
+                    <path d="M1 1L6 6L11 1"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <div class="filter-category">
+              <h4 class="category-title">高级筛选</h4>
+              <div class="filter-options">
+                <div
+                  v-for="filter in advancedFilters"
+                  :key="filter.key"
+                  class="filter-option-item"
+                  @click="openFilterModal(filter.key)"
+                >
+                  <span class="filter-name">{{ filter.label }}</span>
+                  <span class="filter-value">{{ getFilterDisplayValue(filter.key) }}</span>
+                  <svg class="arrow-icon" width="12" height="8" viewBox="0 0 12 8">
+                    <path d="M1 1L6 6L11 1"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="filter-actions">
+            <button class="filter-reset-btn" @click="resetAllFilters">重置筛选</button>
+            <button class="filter-apply-btn" @click="applyFilters">应用筛选</button>
           </div>
         </div>
       </div>
@@ -427,8 +486,8 @@ export default {
       // 基本状态
       currentDateDisplay: '06-20',
       compareDateDisplay: '06-19',
-      selectedMetric: 'sales-amount',
-      selectedDimension: 'region',
+      selectedMetric: 'order-amount',
+      selectedDimension: 'customer',
       selectedBusinessCategory: 'all',
       
       // 排序状态
@@ -439,6 +498,7 @@ export default {
       showDatePicker: false,
       showMetricSelector: false,
       showDimensionSelector: false,
+      showFilterSelector: false,
       showFilterConfig: false,
       showDrilldownResults: false,
       showFilterModal: false,
@@ -917,15 +977,24 @@ export default {
     openDimensionSelector() {
       this.showDimensionSelector = true
     },
-    
+
     hideDimensionSelector() {
       this.showDimensionSelector = false
     },
-    
+
     selectDimension(dimensionKey) {
       this.selectedDimension = dimensionKey
       this.hideDimensionSelector()
       this.refreshAnalysisData()
+    },
+
+    // 筛选选择相关方法
+    openFilterSelector() {
+      this.showFilterSelector = true
+    },
+
+    hideFilterSelector() {
+      this.showFilterSelector = false
     },
     
     // 业务分类选择
@@ -1302,36 +1371,52 @@ export default {
 
 .date-group {
   padding: 16px;
+  display: flex;
+  gap: 12px;
 }
 
 .date-item {
+  flex: 1;
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
-  padding: 14px 0;
+  padding: 14px 12px;
   cursor: pointer;
-  border-bottom: 1px solid #f5f5f5;
-  transition: background-color 0.2s;
-}
-
-.date-item:last-child {
-  border-bottom: none;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  transition: all 0.2s;
+  background-color: #f8f9fa;
 }
 
 .date-item:hover {
-  background-color: #f8f9fa;
+  background-color: #f0f8ff;
+  border-color: #007AFF;
+}
+
+.date-item.left-date {
+  background-color: #f0f8ff;
+  border-color: #007AFF;
+}
+
+.date-item.right-date {
+  background-color: #fff5f5;
+  border-color: #ff6b6b;
 }
 
 .date-label {
   color: #333333;
-  font-size: 15px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  text-align: center;
 }
 
 .date-value {
   color: #666666;
-  font-size: 15px;
-  margin-right: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 6px;
+  text-align: center;
 }
 
 .dropdown-icon {
@@ -1339,6 +1424,19 @@ export default {
   stroke-width: 1.5;
   fill: none;
   transition: transform 0.3s ease;
+  align-self: center;
+}
+
+.date-item:hover .dropdown-icon {
+  stroke: #007AFF;
+}
+
+.date-item.left-date .date-label {
+  color: #007AFF;
+}
+
+.date-item.right-date .date-label {
+  color: #ff6b6b;
 }
 
 /* 分析指标维度选择 */
@@ -1351,36 +1449,40 @@ export default {
 
 .selection-group {
   padding: 16px;
+  display: flex;
+  gap: 12px;
 }
 
 .selection-item {
+  flex: 1;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  padding: 14px 0;
+  padding: 12px 8px;
   cursor: pointer;
-  border-bottom: 1px solid #f5f5f5;
-  transition: background-color 0.2s;
-}
-
-.selection-item:last-child {
-  border-bottom: none;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  transition: all 0.2s;
+  background-color: #f8f9fa;
+  gap: 6px;
 }
 
 .selection-item:hover {
-  background-color: #f8f9fa;
+  background-color: #f0f8ff;
+  border-color: #007AFF;
 }
 
 .selection-label {
   color: #333333;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
+  text-align: center;
 }
 
 .selection-value {
   color: #666666;
-  font-size: 15px;
-  margin-right: 8px;
+  font-size: 14px;
+  text-align: center;
 }
 
 /* 数据展示区 */
@@ -1973,6 +2075,158 @@ export default {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* 底部弹窗样式 */
+.bottom-sheet {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  top: auto !important;
+  transform: none !important;
+  border-radius: 16px 16px 0 0 !important;
+  max-height: 70vh;
+  animation: slideUpFromBottom 0.3s ease-out !important;
+}
+
+@keyframes slideUpFromBottom {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* 筛选弹窗内容样式 */
+.filter-categories {
+  padding: 0;
+}
+
+.filter-category {
+  margin-bottom: 24px;
+}
+
+.filter-category:last-child {
+  margin-bottom: 0;
+}
+
+.category-title {
+  color: #333333;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  padding: 0 4px;
+}
+
+.filter-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filter-option-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filter-option-item:hover {
+  background-color: #e9ecef;
+  border-color: #007AFF;
+}
+
+.filter-name {
+  color: #333333;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.filter-value {
+  color: #666666;
+  font-size: 13px;
+  margin-right: 8px;
+}
+
+.arrow-icon {
+  stroke: #999999;
+  stroke-width: 1.5;
+  fill: none;
+}
+
+/* 响应式设计 */
+@media (max-width: 480px) {
+  /* 保持日期区域左右排布 */
+  .date-group {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 8px;
+  }
+
+  .date-item {
+    flex: 1;
+    padding: 10px 8px;
+  }
+
+  .date-label {
+    font-size: 12px;
+  }
+
+  .date-value {
+    font-size: 13px;
+  }
+
+  /* 选择区域在小屏幕上垂直排布 */
+  .selection-group {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .selection-item {
+    padding: 10px 12px;
+  }
+
+  .selection-label {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 360px) {
+  .date-group {
+    padding: 12px;
+    gap: 6px;
+  }
+
+  .date-item {
+    padding: 8px 6px;
+  }
+
+  .date-label {
+    font-size: 11px;
+  }
+
+  .date-value {
+    font-size: 12px;
+  }
+
+  .selection-group {
+    padding: 12px;
+  }
+
+  .selection-item {
+    padding: 8px 10px;
+  }
+
+  .selection-label {
+    font-size: 12px;
   }
 }
 </style>

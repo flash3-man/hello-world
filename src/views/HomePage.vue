@@ -636,12 +636,14 @@ export default {
         { id: 8, name: '客户销退汇总', icon: 'refresh-cw', route: 'customer-return', selected: true },
         { id: 9, name: '客户管理', icon: 'user', route: 'customer-management', selected: false },
         { id: 10, name: '库存管理', icon: 'package', route: 'inventory-management', selected: false },
-        { id: 11, name: '财务报表', icon: 'dollar-sign', route: 'financial-reports', selected: false },
+        { id: 11, name: '资金整体分析', icon: 'dollar-sign', route: 'financial-analysis', selected: false },
         { id: 12, name: '系统设置', icon: 'settings', route: 'system-settings', selected: false },
         { id: 13, name: '数据导出', icon: 'download', route: 'data-export', selected: false },
         { id: 14, name: '消息中心', icon: 'bell', route: 'message-center', selected: false },
         { id: 15, name: '营销活动', icon: 'megaphone', route: 'marketing-activities', selected: false },
-        { id: 16, name: '供应商管理', icon: 'truck', route: 'supplier-management', selected: false }
+        { id: 16, name: '供应商管理', icon: 'truck', route: 'supplier-management', selected: false },
+        { id: 17, name: '拜访分析', icon: '🚶', route: 'visit-analysis', selected: true },
+        { id: 18, name: '员工利润', icon: '💵', route: 'employee-profit', selected: true }
       ],
       
       // 目标数据
