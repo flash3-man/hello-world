@@ -19,6 +19,9 @@ import FinancialAnalysis from '@/views/FinancialAnalysis.vue'
 import TestTable from '@/views/TestTable.vue'
 import TestTableLayout from '@/views/TestTableLayout.vue'
 import ComprehensiveAnalysis from '@/views/ComprehensiveAnalysis.vue'
+import FocusAnalysis from '@/views/FocusAnalysis.vue'
+import OrderAnalysis from '@/views/OrderAnalysis.vue'
+import DistributionAnalysis from '@/views/DistributionAnalysis.vue'
 
 const routes = [
   {
@@ -120,6 +123,42 @@ const routes = [
     path: '/comprehensive-analysis',
     name: 'ComprehensiveAnalysis',
     component: ComprehensiveAnalysis
+  },
+  {
+    path: '/focus-analysis',
+    name: 'FocusAnalysis',
+    component: FocusAnalysis
+  },
+  // 带参数的路由
+  {
+    path: '/employee-analysis/:employeeId',
+    name: 'EmployeeAnalysisDetail',
+    component: EmployeeAnalysis
+  },
+  {
+    path: '/performance-analysis/:employeeId',
+    name: 'PerformanceAnalysisDetail',
+    component: PerformanceAnalysis
+  },
+  {
+    path: '/customer-analysis/:customerId',
+    name: 'CustomerAnalysisDetail',
+    component: CustomerAnalysis
+  },
+  {
+    path: '/product-analysis/:productId',
+    name: 'ProductAnalysisDetail',
+    component: ProductAnalysis
+  },
+  {
+    path: '/order-analysis/:employeeId',
+    name: 'OrderAnalysis',
+    component: OrderAnalysis
+  },
+  {
+    path: '/distribution-analysis/:employeeId',
+    name: 'DistributionAnalysis',
+    component: DistributionAnalysis
   }
 ]
 
