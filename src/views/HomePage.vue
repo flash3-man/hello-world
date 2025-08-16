@@ -237,13 +237,13 @@
         <span class="section-title">快速功能</span>
         <button class="all-functions-btn" @click="showAllFunctions">全部</button>
       </div>
-      
+
       <!-- 宫格布局 -->
       <div class="functions-grid">
         <!-- 第一行 -->
         <div class="function-row">
-          <div 
-            v-for="func in displayedFunctions.slice(0, 4)" 
+          <div
+            v-for="func in displayedFunctions.slice(0, 4)"
             :key="func.id"
             class="function-item"
             @click="navigateToFunction(func.route)"
@@ -253,11 +253,11 @@
             <div class="function-name">{{ func.name }}</div>
           </div>
         </div>
-        
+
         <!-- 第二行 -->
         <div class="function-row">
-          <div 
-            v-for="func in displayedFunctions.slice(4, 8)" 
+          <div
+            v-for="func in displayedFunctions.slice(4, 8)"
             :key="func.id"
             class="function-item"
             @click="navigateToFunction(func.route)"
@@ -1151,6 +1151,48 @@ export default {
         } catch (e) {
           console.error('Failed to load function config:', e)
         }
+      } else {
+        // 如果没有保存的配置，使用默认配置并保存
+        this.saveFunctionConfig()
+      }
+    },
+
+    // 保存快速功能配置
+    saveFunctionConfig() {
+      const config = this.allFunctionsList.map(func => ({
+        id: func.id,
+        name: func.name,
+        icon: func.icon,
+        route: func.route,
+        selected: func.selected
+      }))
+      localStorage.setItem('quickFunctionConfig', JSON.stringify(config))
+    },
+
+    // 处理首页应用更新事件
+    handleHomeAppsUpdate(event) {
+      try {
+        // 如果事件中包含功能配置，直接使用
+        if (event.detail && event.detail.functionConfig) {
+          const config = event.detail.functionConfig
+
+          config.forEach(item => {
+            const func = this.allFunctionsList.find(f => f.id === item.id)
+            if (func) {
+              func.selected = item.selected
+            }
+          })
+
+          // 强制更新视图
+          this.$forceUpdate()
+
+        } else {
+          // 否则重新加载配置
+          this.loadFunctionConfig()
+        }
+
+      } catch (error) {
+        console.error('处理更新事件时发生错误：', error)
       }
     },
 
@@ -1216,6 +1258,14 @@ export default {
     this.loadFunctionConfig()
     // 启动预警信息轮播
     this.startAlertRotation()
+
+    // 监听快捷访问页面的首页应用更新事件
+    window.addEventListener('homeAppsUpdated', this.handleHomeAppsUpdate)
+  },
+
+  beforeUnmount() {
+    // 清理事件监听器
+    window.removeEventListener('homeAppsUpdated', this.handleHomeAppsUpdate)
   }
 }
 </script>
@@ -2159,6 +2209,8 @@ export default {
   text-align: center;
   line-height: 1.2;
 }
+
+
 
 /* 全功能配置页面 */
 .function-config-overlay {

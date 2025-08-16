@@ -14,35 +14,52 @@
       </div>
       
       <!-- 编辑按钮 -->
-      <div class="edit-button" @click="enterEditMode">
-        <span class="edit-text">编辑</span>
+      <div class="edit-button" @click="toggleEditMode">
+        <span class="edit-text">{{ editMode ? '保存' : '编辑' }}</span>
       </div>
+
+
     </div>
 
     <!-- 模块2：首页应用区 -->
     <div class="home-apps-section">
       <div class="section-header">
-        <span class="section-title">首页应用</span>
-        <span class="section-subtitle">{{ homeApps.length }}/9</span>
+        <div class="section-left">
+          <span class="section-title">首页应用</span>
+          <span class="section-subtitle">{{ homeApps.length }}/8</span>
+        </div>
+        <div class="section-right">
+          <button class="reset-config-btn" @click="resetConfig">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,6A6,6 0 0,0 6,12A6,6 0 0,0 12,18A6,6 0 0,0 18,12A6,6 0 0,0 12,6M10,8L16,12L10,16V8Z"/>
+            </svg>
+            重置
+          </button>
+        </div>
       </div>
       
-      <div class="apps-grid home-grid">
-        <div 
-          v-for="app in homeApps" 
+      <div class="apps-grid home-grid modern-grid">
+        <div
+          v-for="app in homeApps"
           :key="app.id"
-          class="app-item"
-          :class="app.colorClass"
+          class="app-item modern-card"
           @click="navigateToApp(app)"
         >
-          <div class="app-icon">{{ app.icon }}</div>
-          <div class="app-label">{{ app.name }}</div>
-          <div v-if="editMode" class="remove-btn" @click.stop="removeFromHome(app.id)">×</div>
+          <div class="app-icon-modern" :style="{ backgroundColor: getAppColor(app.colorClass) }">
+            <div class="icon-content">{{ app.icon }}</div>
+          </div>
+          <div class="app-label modern-label">{{ app.name }}</div>
+          <div v-if="editMode" class="remove-btn modern-remove" @click.stop="removeFromHome(app.id)">×</div>
         </div>
-        
+
         <!-- 添加更多按钮 -->
-        <div v-if="homeApps.length < 9 && editMode" class="app-item add-more" @click="openAddDialog">
-          <div class="app-icon">+</div>
-          <div class="app-label">添加</div>
+        <div v-if="homeApps.length < 8 && editMode" class="app-item add-more modern-add" @click="openAddDialog">
+          <div class="add-icon-modern">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"/>
+            </svg>
+          </div>
+          <div class="app-label modern-label">添加应用</div>
         </div>
       </div>
     </div>
@@ -54,17 +71,18 @@
         <span class="section-subtitle">全局经营分析</span>
       </div>
       
-      <div class="apps-grid">
-        <div 
-          v-for="app in comprehensiveApps" 
+      <div class="apps-grid modern-grid">
+        <div
+          v-for="app in comprehensiveApps"
           :key="app.id"
-          class="app-item"
-          :class="app.colorClass"
+          class="app-item modern-card"
           @click="navigateToApp(app)"
         >
-          <div class="app-icon">{{ app.icon }}</div>
-          <div class="app-label">{{ app.name }}</div>
-          <div class="app-desc">{{ app.description }}</div>
+          <div class="app-icon-modern" :style="{ backgroundColor: getAppColor(app.colorClass) }">
+            <div class="icon-content">{{ app.icon }}</div>
+          </div>
+          <div class="app-label modern-label">{{ app.name }}</div>
+          <div class="app-desc modern-desc">{{ app.description }}</div>
         </div>
       </div>
     </div>
@@ -76,17 +94,18 @@
         <span class="section-subtitle">员工管理与分析</span>
       </div>
       
-      <div class="apps-grid">
-        <div 
-          v-for="app in employeeApps" 
+      <div class="apps-grid modern-grid">
+        <div
+          v-for="app in employeeApps"
           :key="app.id"
-          class="app-item"
-          :class="app.colorClass"
+          class="app-item modern-card"
           @click="navigateToApp(app)"
         >
-          <div class="app-icon">{{ app.icon }}</div>
-          <div class="app-label">{{ app.name }}</div>
-          <div class="app-desc">{{ app.description }}</div>
+          <div class="app-icon-modern" :style="{ backgroundColor: getAppColor(app.colorClass) }">
+            <div class="icon-content">{{ app.icon }}</div>
+          </div>
+          <div class="app-label modern-label">{{ app.name }}</div>
+          <div class="app-desc modern-desc">{{ app.description }}</div>
         </div>
       </div>
     </div>
@@ -98,17 +117,18 @@
         <span class="section-subtitle">客户管理与分析</span>
       </div>
       
-      <div class="apps-grid">
-        <div 
-          v-for="app in customerApps" 
+      <div class="apps-grid modern-grid">
+        <div
+          v-for="app in customerApps"
           :key="app.id"
-          class="app-item"
-          :class="app.colorClass"
+          class="app-item modern-card"
           @click="navigateToApp(app)"
         >
-          <div class="app-icon">{{ app.icon }}</div>
-          <div class="app-label">{{ app.name }}</div>
-          <div class="app-desc">{{ app.description }}</div>
+          <div class="app-icon-modern" :style="{ backgroundColor: getAppColor(app.colorClass) }">
+            <div class="icon-content">{{ app.icon }}</div>
+          </div>
+          <div class="app-label modern-label">{{ app.name }}</div>
+          <div class="app-desc modern-desc">{{ app.description }}</div>
         </div>
       </div>
     </div>
@@ -120,17 +140,18 @@
         <span class="section-subtitle">商品管理与分析</span>
       </div>
       
-      <div class="apps-grid">
-        <div 
-          v-for="app in productApps" 
+      <div class="apps-grid modern-grid">
+        <div
+          v-for="app in productApps"
           :key="app.id"
-          class="app-item"
-          :class="app.colorClass"
+          class="app-item modern-card"
           @click="navigateToApp(app)"
         >
-          <div class="app-icon">{{ app.icon }}</div>
-          <div class="app-label">{{ app.name }}</div>
-          <div class="app-desc">{{ app.description }}</div>
+          <div class="app-icon-modern" :style="{ backgroundColor: getAppColor(app.colorClass) }">
+            <div class="icon-content">{{ app.icon }}</div>
+          </div>
+          <div class="app-label modern-label">{{ app.name }}</div>
+          <div class="app-desc modern-desc">{{ app.description }}</div>
         </div>
       </div>
     </div>
@@ -142,17 +163,18 @@
         <span class="section-subtitle">资金管理与分析</span>
       </div>
       
-      <div class="apps-grid">
-        <div 
-          v-for="app in financeApps" 
+      <div class="apps-grid modern-grid">
+        <div
+          v-for="app in financeApps"
           :key="app.id"
-          class="app-item"
-          :class="app.colorClass"
+          class="app-item modern-card"
           @click="navigateToApp(app)"
         >
-          <div class="app-icon">{{ app.icon }}</div>
-          <div class="app-label">{{ app.name }}</div>
-          <div class="app-desc">{{ app.description }}</div>
+          <div class="app-icon-modern" :style="{ backgroundColor: getAppColor(app.colorClass) }">
+            <div class="icon-content">{{ app.icon }}</div>
+          </div>
+          <div class="app-label modern-label">{{ app.name }}</div>
+          <div class="app-desc modern-desc">{{ app.description }}</div>
         </div>
       </div>
     </div>
@@ -226,16 +248,16 @@ export default {
       searchKeyword: '',
       searchResults: [],
       
-      // 首页应用（用户自定义的高频功能，最多9个）
+      // 首页应用（用户自定义的高频功能，最多8个）
       homeApps: [
         { id: 1, name: '员工月报', icon: '👥', route: '/employee-report', colorClass: 'orange', domain: '员工业务' },
-        { id: 2, name: '综合月报', icon: '📊', route: '/monthly-report', colorClass: 'green', domain: '综合业务' },
-        { id: 3, name: '电视大屏', icon: '📺', route: '/tv-dashboard', colorClass: 'blue', domain: '综合业务' },
+        { id: 2, name: '业绩变化分析', icon: '📈', route: '/performance-analysis', colorClass: 'green', domain: '员工业务' },
+        { id: 3, name: '员工整体分析', icon: '👤', route: '/employee-analysis', colorClass: 'blue', domain: '员工业务' },
         { id: 4, name: '目标管理', icon: '🎯', route: '/goal-management', colorClass: 'orange', domain: '综合业务' },
-        { id: 5, name: '员工动态', icon: '📈', route: '/employee-dynamics', colorClass: 'orange', domain: '员工业务' },
-        { id: 6, name: '综合日报', icon: '📋', route: '/daily-report', colorClass: 'green', domain: '综合业务' },
-        { id: 7, name: '员工业绩汇总', icon: '🏆', route: '/employee-performance', colorClass: 'green', domain: '员工业务' },
-        { id: 8, name: '客户销退汇总', icon: '🔄', route: '/customer-return', colorClass: 'blue', domain: '客户业务' }
+        { id: 5, name: '我的经营月报', icon: '📊', route: '/monthly-report', colorClass: 'purple', domain: '综合业务' },
+        { id: 6, name: '铺市分析', icon: '📍', route: '/market-analysis', colorClass: 'teal', domain: '客户业务' },
+        { id: 7, name: '员工业绩汇总', icon: '🏆', route: '/employee-performance', colorClass: 'brown', domain: '员工业务' },
+        { id: 8, name: '客户销退汇总', icon: '🔄', route: '/customer-return', colorClass: 'grey', domain: '客户业务' }
       ],
       
       // 综合业务域
@@ -320,9 +342,16 @@ export default {
       this.$router.go(-1)
     },
     
-    // 进入编辑模式
-    enterEditMode() {
-      this.editMode = !this.editMode
+    // 切换编辑模式
+    toggleEditMode() {
+      if (this.editMode) {
+        // 保存配置
+        this.saveHomeAppsConfig()
+        this.editMode = false
+      } else {
+        // 进入编辑模式
+        this.editMode = true
+      }
     },
     
     // 导航到应用
@@ -349,11 +378,11 @@ export default {
     
     // 添加到首页
     addToHome(app) {
-      if (this.homeApps.length >= 9) {
-        alert('首页应用最多只能添加9个')
+      if (this.homeApps.length >= 8) {
+        alert('首页应用最多只能添加8个')
         return
       }
-      
+
       this.homeApps.push(app)
       this.saveHomeAppsConfig()
       this.closeAddDialog()
@@ -361,14 +390,28 @@ export default {
     
     // 保存首页应用配置
     saveHomeAppsConfig() {
+      // 保存到localStorage
       localStorage.setItem('homeAppsConfig', JSON.stringify(this.homeApps))
+
+      // 同时保存到快速功能配置中
+      this.syncWithHomePage()
+
+      // 显示保存成功提示
+      alert('配置保存成功！')
     },
     
     // 加载首页应用配置
     loadHomeAppsConfig() {
       const saved = localStorage.getItem('homeAppsConfig')
       if (saved) {
-        this.homeApps = JSON.parse(saved)
+        try {
+          const savedApps = JSON.parse(saved)
+          if (savedApps && savedApps.length > 0) {
+            this.homeApps = savedApps
+          }
+        } catch (e) {
+          console.error('Failed to load home apps config:', e)
+        }
       }
     },
     
@@ -407,11 +450,201 @@ export default {
       this.showSearch = false
       this.searchKeyword = ''
       this.searchResults = []
+    },
+
+    // 获取应用颜色
+    getAppColor(colorClass) {
+      const colorMap = {
+        'orange': '#FF8C42',
+        'green': '#4CAF50',
+        'blue': '#2196F3',
+        'purple': '#9C27B0',
+        'teal': '#00BCD4',
+        'brown': '#795548',
+        'grey': '#607D8B'
+      }
+      return colorMap[colorClass] || '#4A90E2'
+    },
+
+    // 与主页面同步
+    syncWithHomePage() {
+      try {
+        // 将首页应用配置同步到主页面的快速功能配置
+        const homeAppRoutes = this.homeApps.map(app => {
+          // 根据应用名称找到对应的功能ID
+          const functionMap = {
+            '员工月报': 1,
+            '业绩变化分析': 2,
+            '员工整体分析': 3,
+            '目标管理': 4,
+            '我的经营月报': 5,
+            '铺市分析': 6,
+            '员工业绩汇总': 7,
+            '客户销退汇总': 8,
+            '综合月报': 5,
+            '电视大屏': 9,
+            '综合日报': 10,
+            '员工动态': 11,
+            '拜访分析': 17,
+            '员工利润': 18
+          }
+          return functionMap[app.name]
+        }).filter(id => id) // 过滤掉未找到的ID
+
+        // 获取或创建主页面的快速功能配置
+        let quickFunctionConfig = JSON.parse(localStorage.getItem('quickFunctionConfig') || '[]')
+
+        // 检查配置格式，如果缺少必要字段则重新创建
+        const needsRecreate = quickFunctionConfig.length === 0 ||
+                             !Object.prototype.hasOwnProperty.call(quickFunctionConfig[0], 'name') ||
+                             !Object.prototype.hasOwnProperty.call(quickFunctionConfig[0], 'icon')
+
+        if (needsRecreate) {
+          const allFunctions = [
+            { id: 1, name: '员工月报', icon: 'users', route: 'employee-report', selected: false },
+            { id: 2, name: '业绩变化分析', icon: 'trending-up', route: 'performance-analysis', selected: false },
+            { id: 3, name: '员工整体分析', icon: 'user-check', route: 'employee-analysis', selected: false },
+            { id: 4, name: '目标管理', icon: 'target', route: 'goal-management', selected: false },
+            { id: 5, name: '我的经营月报', icon: 'file-text', route: 'monthly-report', selected: false },
+            { id: 6, name: '铺市分析', icon: 'map-pin', route: 'market-analysis', selected: false },
+            { id: 7, name: '员工业绩汇总', icon: 'bar-chart', route: 'employee-performance', selected: false },
+            { id: 8, name: '客户销退汇总', icon: 'refresh-cw', route: 'customer-return', selected: false },
+            { id: 9, name: '电视大屏', icon: 'settings', route: 'tv-dashboard', selected: false },
+            { id: 10, name: '综合日报', icon: 'download', route: 'daily-report', selected: false },
+            { id: 11, name: '员工动态', icon: 'bell', route: 'employee-dynamics', selected: false },
+            { id: 12, name: '客户管理', icon: 'user', route: 'customer-management', selected: false },
+            { id: 13, name: '库存管理', icon: 'package', route: 'inventory-management', selected: false },
+            { id: 14, name: '商品分析', icon: 'package', route: 'product-analysis', selected: false },
+            { id: 15, name: '数据导出', icon: 'download', route: 'data-export', selected: false },
+            { id: 16, name: '系统设置', icon: 'settings', route: 'system-settings', selected: false },
+            { id: 17, name: '拜访分析', icon: 'megaphone', route: 'visit-analysis', selected: false },
+            { id: 18, name: '员工利润', icon: 'truck', route: 'employee-profit', selected: false }
+          ]
+
+          // 如果原配置存在，保持原有的selected状态
+          if (quickFunctionConfig.length > 0) {
+            allFunctions.forEach(func => {
+              const oldFunc = quickFunctionConfig.find(f => f.id === func.id)
+              if (oldFunc && Object.prototype.hasOwnProperty.call(oldFunc, 'selected')) {
+                func.selected = oldFunc.selected
+              }
+            })
+          }
+
+          quickFunctionConfig = allFunctions
+        }
+
+        // 重置所有功能为未选中
+        quickFunctionConfig.forEach(func => {
+          func.selected = false
+        })
+
+        // 设置首页应用对应的功能为选中
+        homeAppRoutes.forEach(funcId => {
+          const func = quickFunctionConfig.find(f => f.id === funcId)
+          if (func) {
+            func.selected = true
+          }
+        })
+
+        // 保存更新后的配置
+        localStorage.setItem('quickFunctionConfig', JSON.stringify(quickFunctionConfig))
+
+        // 触发主页面更新
+        const event = new CustomEvent('homeAppsUpdated', {
+          detail: {
+            homeApps: this.homeApps,
+            functionConfig: quickFunctionConfig,
+            timestamp: Date.now()
+          }
+        })
+        window.dispatchEvent(event)
+
+      } catch (error) {
+        console.error('同步过程中发生错误：', error)
+      }
+    },
+
+    // 与主页面同步首页应用
+    syncHomeAppsWithMainPage() {
+      // 先尝试从homeAppsConfig加载
+      const savedHomeApps = localStorage.getItem('homeAppsConfig')
+      if (savedHomeApps) {
+        try {
+          const homeAppsConfig = JSON.parse(savedHomeApps)
+          if (homeAppsConfig && homeAppsConfig.length > 0) {
+            this.homeApps = homeAppsConfig
+            return
+          }
+        } catch (e) {
+          console.error('解析homeAppsConfig失败：', e)
+        }
+      }
+
+      // 如果没有homeAppsConfig，从主页面的快速功能配置中获取选中的功能
+      const quickFunctionConfig = JSON.parse(localStorage.getItem('quickFunctionConfig') || '[]')
+      const selectedFunctions = quickFunctionConfig.filter(func => func.selected)
+
+      // 将选中的功能映射为首页应用
+      const functionToAppMap = {
+        1: { id: 1, name: '员工月报', icon: '👥', route: '/employee-report', colorClass: 'orange', domain: '员工业务' },
+        2: { id: 2, name: '业绩变化分析', icon: '📈', route: '/performance-analysis', colorClass: 'green', domain: '员工业务' },
+        3: { id: 3, name: '员工整体分析', icon: '👤', route: '/employee-analysis', colorClass: 'blue', domain: '员工业务' },
+        4: { id: 4, name: '目标管理', icon: '🎯', route: '/goal-management', colorClass: 'orange', domain: '综合业务' },
+        5: { id: 5, name: '我的经营月报', icon: '📊', route: '/monthly-report', colorClass: 'purple', domain: '综合业务' },
+        6: { id: 6, name: '铺市分析', icon: '📍', route: '/market-analysis', colorClass: 'teal', domain: '客户业务' },
+        7: { id: 7, name: '员工业绩汇总', icon: '🏆', route: '/employee-performance', colorClass: 'brown', domain: '员工业务' },
+        8: { id: 8, name: '客户销退汇总', icon: '🔄', route: '/customer-return', colorClass: 'grey', domain: '客户业务' },
+        9: { id: 9, name: '电视大屏', icon: '📺', route: '/tv-dashboard', colorClass: 'blue', domain: '综合业务' },
+        10: { id: 10, name: '综合日报', icon: '📋', route: '/daily-report', colorClass: 'green', domain: '综合业务' },
+        11: { id: 11, name: '员工动态', icon: '📈', route: '/employee-dynamics', colorClass: 'orange', domain: '员工业务' },
+        17: { id: 17, name: '拜访分析', icon: '📍', route: '/visit-analysis', colorClass: 'teal', domain: '客户业务' },
+        18: { id: 18, name: '员工利润', icon: '💰', route: '/employee-profit', colorClass: 'green', domain: '员工业务' }
+      }
+
+      // 更新首页应用列表
+      const newHomeApps = selectedFunctions.map(func => functionToAppMap[func.id]).filter(app => app)
+
+      if (newHomeApps.length > 0) {
+        this.homeApps = newHomeApps
+      }
+    },
+
+
+
+    // 重置配置
+    resetConfig() {
+      if (confirm('确定要重置所有配置吗？这将清除所有自定义设置。')) {
+        // 清除localStorage
+        localStorage.removeItem('homeAppsConfig')
+        localStorage.removeItem('quickFunctionConfig')
+
+        // 重置首页应用为默认配置
+        this.homeApps = [
+          { id: 1, name: '员工月报', icon: '👥', route: '/employee-report', colorClass: 'orange', domain: '员工业务' },
+          { id: 2, name: '业绩变化分析', icon: '📈', route: '/performance-analysis', colorClass: 'green', domain: '员工业务' },
+          { id: 3, name: '员工整体分析', icon: '👤', route: '/employee-analysis', colorClass: 'blue', domain: '员工业务' },
+          { id: 4, name: '目标管理', icon: '🎯', route: '/goal-management', colorClass: 'orange', domain: '综合业务' },
+          { id: 5, name: '我的经营月报', icon: '📊', route: '/monthly-report', colorClass: 'purple', domain: '综合业务' },
+          { id: 6, name: '铺市分析', icon: '📍', route: '/market-analysis', colorClass: 'teal', domain: '客户业务' },
+          { id: 7, name: '员工业绩汇总', icon: '🏆', route: '/employee-performance', colorClass: 'brown', domain: '员工业务' },
+          { id: 8, name: '客户销退汇总', icon: '🔄', route: '/customer-return', colorClass: 'grey', domain: '客户业务' }
+        ]
+
+        // 保存默认配置
+        this.saveHomeAppsConfig()
+
+        alert('配置已重置为默认设置！')
+
+        // 刷新页面
+        location.reload()
+      }
     }
   },
-  
+
   mounted() {
     this.loadHomeAppsConfig()
+    this.syncHomeAppsWithMainPage()
   }
 }
 </script>
@@ -479,18 +712,25 @@ export default {
 
 .edit-button {
   cursor: pointer;
-  padding: 8px 12px;
-  border-radius: 6px;
-  transition: background-color 0.3s ease;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: #4A90E2;
+  color: white;
+  border: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(74, 144, 226, 0.2);
 }
 
 .edit-button:hover {
-  background: #f8f9fa;
+  background: #357abd;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(74, 144, 226, 0.3);
 }
 
 .edit-text {
   font-size: 14px;
-  color: #4A90E2;
+  color: white;
+  font-weight: 600;
 }
 
 /* === 内容区域 === */
@@ -520,6 +760,42 @@ export default {
   border-bottom: 1px solid #e9ecef;
 }
 
+.section-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-right {
+  display: flex;
+  align-items: center;
+}
+
+.reset-config-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  color: #6c757d;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.reset-config-btn:hover {
+  background: #e9ecef;
+  color: #495057;
+  border-color: #dee2e6;
+}
+
+.reset-config-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
 .section-title {
   font-size: 16px;
   font-weight: bold;
@@ -542,6 +818,19 @@ export default {
   grid-template-columns: repeat(3, 1fr);
 }
 
+/* === 现代化网格布局 === */
+.modern-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.home-grid.modern-grid {
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
 /* === 应用项样式 === */
 .app-item {
   position: relative;
@@ -560,6 +849,41 @@ export default {
 .app-item:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+
+/* === 现代化卡片样式 === */
+.app-item.modern-card {
+  border: none;
+  background: #ffffff;
+  min-height: auto;
+  padding: 16px 12px;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.app-item.modern-card:hover {
+  background-color: #ffffff;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+.app-item.modern-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #4A90E2, #5CB85C, #F0AD4E, #D9534F);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.app-item.modern-card:hover::before {
+  opacity: 1;
 }
 
 /* === 颜色分类 === */
@@ -585,6 +909,66 @@ export default {
   color: #4A90E2;
 }
 
+/* === 现代化图标样式 === */
+.app-icon-modern {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px auto;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.app-icon-modern::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 100%);
+  border-radius: 14px;
+}
+
+.app-item.modern-card:hover .app-icon-modern {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
+.icon-content {
+  font-size: 22px;
+  color: white;
+  position: relative;
+  z-index: 1;
+}
+
+/* === 添加按钮样式 === */
+.add-icon-modern {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px auto;
+  background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+  color: #6c757d;
+  border: 2px dashed #adb5bd;
+  transition: all 0.3s ease;
+}
+
+.app-item.modern-add:hover .add-icon-modern {
+  background: linear-gradient(135deg, #4A90E2 0%, #357abd 100%);
+  color: white;
+  border-color: #4A90E2;
+  transform: scale(1.1);
+}
+
 /* === 应用图标和文字 === */
 .app-icon {
   font-size: 24px;
@@ -597,6 +981,66 @@ export default {
   text-align: center;
   line-height: 1.2;
   font-weight: 500;
+}
+
+/* === 现代化文字样式 === */
+.modern-label {
+  font-size: 13px;
+  color: #2c3e50;
+  text-align: center;
+  line-height: 1.3;
+  font-weight: 600;
+  margin-bottom: 4px;
+  letter-spacing: 0.3px;
+}
+
+.modern-desc {
+  font-size: 10px;
+  color: #7f8c8d;
+  text-align: center;
+  line-height: 1.4;
+  margin-top: 4px;
+  opacity: 0.8;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* === 移除按钮现代化样式 === */
+.modern-remove {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  z-index: 1000;
+  box-shadow: 0 3px 10px rgba(231, 76, 60, 0.4);
+  transition: all 0.3s ease;
+  border: 3px solid white;
+  line-height: 1;
+}
+
+.modern-remove:hover {
+  transform: scale(1.15);
+  box-shadow: 0 5px 15px rgba(231, 76, 60, 0.5);
+}
+
+/* 确保删除按钮在卡片外部可见 */
+.app-item.modern-card {
+  position: relative;
+  overflow: visible;
 }
 
 .app-desc {
@@ -862,6 +1306,80 @@ export default {
 
   .app-label {
     font-size: 10px;
+  }
+
+  /* 现代化设计响应式 */
+  .modern-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+
+  .home-grid.modern-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .app-icon-modern,
+  .add-icon-modern {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+  }
+
+  .icon-content {
+    font-size: 18px;
+  }
+
+  .modern-label {
+    font-size: 11px;
+  }
+
+  .modern-desc {
+    font-size: 8px;
+    -webkit-line-clamp: 1;
+  }
+
+  .app-item.modern-card {
+    padding: 10px 6px;
+    border-radius: 12px;
+  }
+
+  .section-title {
+    font-size: 14px;
+  }
+
+  .business-section {
+    padding: 16px 12px;
+  }
+}
+
+/* 平板设备响应式 */
+@media (max-width: 768px) and (min-width: 481px) {
+  .modern-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+
+  .home-grid.modern-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .app-icon-modern,
+  .add-icon-modern {
+    width: 42px;
+    height: 42px;
+  }
+
+  .modern-label {
+    font-size: 12px;
+  }
+
+  .modern-desc {
+    font-size: 9px;
+  }
+
+  .app-item.modern-card {
+    padding: 12px 8px;
   }
 }
 </style>
