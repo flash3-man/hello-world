@@ -30,6 +30,7 @@ import ComprehensiveAnalysis from '@/views/ComprehensiveAnalysis.vue'
 import FocusAnalysis from '@/views/FocusAnalysis.vue'
 import OrderAnalysis from '@/views/OrderAnalysis.vue'
 import DistributionAnalysis from '@/views/DistributionAnalysis.vue'
+import CoreBusinessIndicators from '@/views/CoreBusinessIndicators.vue'
 
 
 const routes = [
@@ -177,6 +178,11 @@ const routes = [
     path: '/focus-analysis',
     name: 'FocusAnalysis',
     component: FocusAnalysis
+  },
+  {
+    path: '/core-business-indicators',
+    name: 'CoreBusinessIndicators',
+    component: CoreBusinessIndicators
   },
 
   // 带参数的路由

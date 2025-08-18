@@ -1,156 +1,395 @@
 <template>
-  <div class="customer-dimension-analysis">
-    <!-- 顶部操作区（固定置顶） -->
-    <div class="header-section">
-      <div class="header-bar">
+  <div class="customer-analysis-page">
+    <!-- 顶部导航区 -->
+    <div class="top-nav">
+      <div class="nav-left">
         <button class="back-btn" @click="goBack">
-          <svg class="back-icon" width="20" height="20" viewBox="0 0 20 20">
-            <path d="M12 16L6 10L12 4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"/>
           </svg>
         </button>
-        <h1 class="page-title">铺市分析</h1>
-        <div class="header-spacer"></div>
       </div>
+      <div class="nav-center">
+        <span class="nav-title">客户分析</span>
+      </div>
+      <div class="nav-right">
+        <button class="more-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12,16A2,2 0 0,1 14,18A2,2 0 0,1 12,20A2,2 0 0,1 10,18A2,2 0 0,1 12,16M12,10A2,2 0 0,1 14,12A2,2 0 0,1 12,14A2,2 0 0,1 10,12A2,2 0 0,1 12,10M12,4A2,2 0 0,1 14,6A2,2 0 0,1 12,8A2,2 0 0,1 10,6A2,2 0 0,1 12,4Z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
 
-      <!-- 筛选操作区域 -->
-      <div class="filter-section">
-        <div class="filter-row">
-          <div class="filter-group">
-            <label class="filter-label">时间筛选：</label>
-            <div class="time-picker" @click="showTimePicker = true">
-              <span class="time-text">{{ selectedTimeRange }}</span>
-              <svg class="time-arrow" width="12" height="12" viewBox="0 0 12 12">
-                <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <!-- 时间筛选区 -->
+    <div class="time-filter-section">
+      <div class="time-selector">
+        <button class="time-btn" @click="showDatePicker = true">
+          {{ formatDateRange(selectedDateRange) }}
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M7,10L12,15L17,10H7Z"/>
+          </svg>
+        </button>
+      </div>
+      <!-- 时间对比数据 -->
+      <div class="time-comparison">
+        <span class="comparison-text">环比上个月</span>
+        <span class="comparison-text">同比去年这个时候</span>
+      </div>
+    </div>
+
+    <!-- 固定标签导航 -->
+    <div class="sticky-tabs" :class="{ 'sticky': isTabsSticky }">
+      <div class="tab-container">
+        <button
+          v-for="tab in tabs"
+          :key="tab.key"
+          class="tab-item"
+          :class="{ active: activeTab === tab.key }"
+          @click="scrollToSection(tab.key)"
+        >
+          {{ tab.label }}
+        </button>
+      </div>
+    </div>
+
+    <!-- 主要内容区域 -->
+    <div class="main-content" @scroll="handleScroll" ref="mainContent">
+
+      <!-- 客户信息看板 -->
+      <section id="customer-info" class="analysis-section">
+        <div class="section-header">
+          <div class="section-title-row">
+            <span class="section-number">1</span>
+            <h2 class="section-title">客户信息</h2>
+            <button class="detail-btn" @click="showCustomerInfoDetail">
+              详情说明
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,17A1.5,1.5 0 0,1 10.5,15.5A1.5,1.5 0 0,1 12,14A1.5,1.5 0 0,1 13.5,15.5A1.5,1.5 0 0,1 12,17M12,10.5C10.07,10.5 8.5,8.93 8.5,7A3.5,3.5 0 0,1 12,3.5A3.5,3.5 0 0,1 15.5,7C15.5,8.93 13.93,10.5 12,10.5Z"/>
               </svg>
-            </div>
-          </div>
-          
-          <div class="filter-group">
-            <label class="filter-label">分析维度：</label>
-            <div class="dimension-picker" @click="showDimensionPicker = true">
-              <span class="dimension-text">按员工分析</span>
-              <svg class="dimension-arrow" width="12" height="12" viewBox="0 0 12 12">
-                <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" fill="none"/>
-              </svg>
-            </div>
-          </div>
-
-          <button class="filter-btn" @click="showAdvancedFilter = true">
-            <svg width="16" height="16" viewBox="0 0 16 16">
-              <path d="M1 3L15 3M4 8L12 8M6 13L10 13" stroke="currentColor" stroke-width="1.5"/>
-            </svg>
-            筛选
-          </button>
-
-          <button class="export-btn" @click="exportData">
-            <svg width="16" height="16" viewBox="0 0 16 16">
-              <path d="M8 2L8 10M8 2L5 5M8 2L11 5M2 14L14 14" stroke="currentColor" stroke-width="1.5" fill="none"/>
-            </svg>
-            导出
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 维度切换栏（紧邻顶部，固定） -->
-    <div class="dimension-section">
-      <div class="dimension-tabs">
-        <button 
-          class="dimension-tab active"
-          @click="switchToDimension('customer')"
-        >
-          客户
-        </button>
-        <button 
-          class="dimension-tab"
-          @click="switchToDimension('brand')"
-        >
-          品牌
-        </button>
-        <button 
-          class="dimension-tab"
-          @click="switchToDimension('product')"
-        >
-          商品
-        </button>
-      </div>
-    </div>
-
-    <!-- 统计信息栏（维度切换栏下方，固定） -->
-    <div class="stats-section">
-      <div class="stats-info">
-        <span class="stats-text">合计员工数 {{ totalEmployeeCount }}</span>
-      </div>
-    </div>
-
-    <!-- 列表区（滚动加载，核心数据区） -->
-    <div class="data-list-section">
-      <!-- 表格滚动容器 -->
-      <div class="table-scroll-container">
-        <!-- Grid表格容器 -->
-        <div class="employee-grid">
-          <!-- Grid表头 -->
-          <div class="grid-header">员工名称</div>
-          <div class="grid-header">铺货客户数</div>
-          <div class="grid-header">未铺货客户数</div>
-          <div class="grid-header">客户铺货率</div>
-          
-          <!-- Grid数据行 -->
-          <div v-for="employee in employeeList" :key="employee.id" class="grid-row-group">
-            <div class="grid-cell employee-cell" @click="navigateToEmployeeAnalysis(employee)">
-              <div class="employee-info">
-                <div class="employee-name">{{ employee.name }}</div>
-                <div class="employee-tag">{{ employee.department }}</div>
-              </div>
-            </div>
-            
-            <div class="grid-cell metric-cell" @click.stop="showCustomerDetailModal(employee, 'covered')">
-              <div class="metric-value covered">{{ employee.coveredCustomers }}</div>
-            </div>
-            
-            <div class="grid-cell metric-cell" @click.stop="showCustomerDetailModal(employee, 'uncovered')">
-              <div class="metric-value uncovered">{{ employee.uncoveredCustomers }}</div>
-            </div>
-            
-            <div class="grid-cell rate-cell">
-              <div class="rate-value" :class="getRateClass(employee.coverageRate)">
-                {{ employee.coverageRate }}%
-              </div>
-            </div>
-          </div>
-        </div>
-      </div> <!-- 结束 table-scroll-container -->
-
-      <!-- 底部提示 -->
-      <div class="list-footer" v-if="!isLoading && employeeList.length > 0">
-        <span class="footer-text">已经到底了～</span>
-      </div>
-
-      <!-- 加载状态 -->
-      <div class="loading-state" v-if="isLoading">
-        <div class="loading-spinner"></div>
-        <span class="loading-text">加载中...</span>
-      </div>
-    </div>
-
-    <!-- 时间选择弹窗 -->
-    <div v-if="showTimePicker" class="modal-overlay" @click="showTimePicker = false">
-      <div class="modal" @click.stop>
-        <div class="modal-header">
-          <h3>选择时间范围</h3>
-          <button class="modal-close" @click="showTimePicker = false">✕</button>
-        </div>
-        <div class="modal-content">
-          <div class="time-options">
-            <button 
-              v-for="option in timeOptions" 
-              :key="option.value"
-              class="time-option-btn"
-              :class="{ active: selectedTimeValue === option.value }"
-              @click="selectTimeRange(option)"
-            >
-              {{ option.label }}
             </button>
+          </div>
+        </div>
+
+        <div class="mobile-metrics">
+          <div class="metric-row" @click="showEffectiveCustomers">
+            <div class="metric-info">
+              <span class="metric-label">有效客户数</span>
+              <span class="metric-value">1593</span>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"/>
+            </svg>
+          </div>
+
+          <div class="metric-row" @click="showNewCustomers">
+            <div class="metric-info">
+              <span class="metric-label">新增客户数</span>
+              <span class="metric-value">7</span>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"/>
+            </svg>
+          </div>
+
+          <div class="metric-row highlight" @click="showUndeliveredCustomers">
+            <div class="metric-info">
+              <span class="metric-label">探查期间未铺货客户</span>
+              <div class="metric-desc">可以去拜访客户，但是没有铺货，明显是有需求的但是没有铺货的客户，这类客户有很大的合作潜力</div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"/>
+            </svg>
+          </div>
+        </div>
+      </section>
+
+      <!-- 客户交易看板 -->
+      <section id="customer-trade" class="analysis-section">
+        <div class="section-header">
+          <div class="section-title-row">
+            <span class="section-number">2</span>
+            <h2 class="section-title">客户交易分析</h2>
+            <button class="detail-btn" @click="showTransactionDetail">
+              详情说明
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,17A1.5,1.5 0 0,1 10.5,15.5A1.5,1.5 0 0,1 12,14A1.5,1.5 0 0,1 13.5,15.5A1.5,1.5 0 0,1 12,17M12,10.5C10.07,10.5 8.5,8.93 8.5,7A3.5,3.5 0 0,1 12,3.5A3.5,3.5 0 0,1 15.5,7C15.5,8.93 13.93,10.5 12,10.5Z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="transaction-summary">
+          <div class="summary-row">
+            <div class="summary-item">
+              <span class="summary-label">净销售额(元)</span>
+              <span class="summary-value">19,576.80</span>
+              <div class="summary-comparison">
+                <span class="comparison-item">环比 +102.54%</span>
+                <span class="comparison-item">同比 +104.89%</span>
+              </div>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">销售毛利(元)</span>
+              <span class="summary-value">3,969.97</span>
+              <div class="summary-comparison">
+                <span class="comparison-item">环比 +104.89%</span>
+                <span class="comparison-item">同比 +14,314.3%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mobile-analysis-list">
+          <div class="analysis-item" @click="showSegmentDetail('high-sales-high-profit')">
+            <div class="analysis-info">
+              <span class="analysis-label">净销多毛利多</span>
+              <span class="analysis-desc">12家客户贡献了总毛利</span>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"/>
+            </svg>
+          </div>
+
+          <div class="analysis-item" @click="showSegmentDetail('high-sales-low-profit')">
+            <div class="analysis-info">
+              <span class="analysis-label">净销多毛利少</span>
+              <span class="analysis-desc">8家客户需要重点关注</span>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"/>
+            </svg>
+          </div>
+
+          <div class="analysis-item" @click="showSegmentDetail('low-sales-low-profit')">
+            <div class="analysis-info">
+              <span class="analysis-label">净销少毛利少</span>
+              <span class="analysis-desc">11家客户具有提升空间</span>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"/>
+            </svg>
+          </div>
+        </div>
+      </section>
+
+      <!-- 铺市分析 -->
+      <section id="customer-coverage" class="analysis-section">
+        <div class="section-header">
+          <div class="section-title-row">
+            <span class="section-number">3</span>
+            <h2 class="section-title">铺市分析</h2>
+            <button class="detail-btn" @click="showCoverageDetail">
+              详情说明
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,17A1.5,1.5 0 0,1 10.5,15.5A1.5,1.5 0 0,1 12,14A1.5,1.5 0 0,1 13.5,15.5A1.5,1.5 0 0,1 12,17M12,10.5C10.07,10.5 8.5,8.93 8.5,7A3.5,3.5 0 0,1 12,3.5A3.5,3.5 0 0,1 15.5,7C15.5,8.93 13.93,10.5 12,10.5Z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="mobile-analysis-list">
+          <div class="analysis-item" @click="showBrandCoverage">
+            <div class="analysis-info">
+              <span class="analysis-label">提升品牌覆盖</span>
+              <span class="analysis-desc">查看客户漏铺品牌</span>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"/>
+            </svg>
+          </div>
+
+          <div class="analysis-item" @click="showProductCoverage">
+            <div class="analysis-info">
+              <span class="analysis-label">提升商品覆盖</span>
+              <span class="analysis-desc">查看客户漏铺商品</span>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"/>
+            </svg>
+          </div>
+        </div>
+      </section>
+
+      <!-- 利润分析 -->
+      <section id="customer-profit" class="analysis-section">
+        <div class="section-header">
+          <div class="section-title-row">
+            <span class="section-number">4</span>
+            <h2 class="section-title">利润</h2>
+            <button class="detail-btn" @click="showProfitDetail">
+              详情说明
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,17A1.5,1.5 0 0,1 10.5,15.5A1.5,1.5 0 0,1 12,14A1.5,1.5 0 0,1 13.5,15.5A1.5,1.5 0 0,1 12,17M12,10.5C10.07,10.5 8.5,8.93 8.5,7A3.5,3.5 0 0,1 12,3.5A3.5,3.5 0 0,1 15.5,7C15.5,8.93 13.93,10.5 12,10.5Z"/>
+              </svg>
+            </button>
+          </div>
+          <div class="profit-link" @click="showProfitDetail">
+            <span>客户利润条目</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="profit-summary">
+          <div class="profit-main">
+            <span class="profit-label">客户利润(元)</span>
+            <span class="profit-value negative">-201.05</span>
+            <div class="profit-comparison">
+              <span class="comparison-item">环比 +102.54%</span>
+              <span class="comparison-item">同比 +104.89%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="profit-breakdown">
+          <div class="breakdown-table">
+            <div class="breakdown-row" @click="showBreakdownDetail('gross')">
+              <div class="breakdown-info">
+                <span class="breakdown-label">商品毛利(元)</span>
+                <span class="breakdown-value positive">3,969.95</span>
+              </div>
+              <div class="breakdown-trend">
+                <span class="trend-text">环比 +15.2%</span>
+              </div>
+            </div>
+
+            <div class="breakdown-row" @click="showBreakdownDetail('customer-cost')">
+              <div class="breakdown-info">
+                <span class="breakdown-label">客户费用(元)</span>
+                <span class="breakdown-value negative">-2,820.00</span>
+              </div>
+              <div class="breakdown-trend">
+                <span class="trend-text">环比 +1994.62%</span>
+              </div>
+            </div>
+
+            <div class="breakdown-row" @click="showBreakdownDetail('other-cost')">
+              <div class="breakdown-info">
+                <span class="breakdown-label">客户其他费用(元)</span>
+                <span class="breakdown-value negative">-1,351.00</span>
+              </div>
+              <div class="breakdown-trend">
+                <span class="trend-text">环比 +25.8%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="profit-trend">
+          <div class="trend-section">
+            <h3 class="trend-title">费用利润趋势</h3>
+            <div class="trend-chart" @click="showProfitTrend">
+              <div class="chart-placeholder">
+                <svg width="100%" height="120" viewBox="0 0 300 120">
+                  <!-- 简化的趋势线 -->
+                  <polyline
+                    points="20,80 60,75 100,70 140,65 180,68 220,72 260,75"
+                    fill="none"
+                    stroke="#1890ff"
+                    stroke-width="2"
+                  />
+                  <polyline
+                    points="20,90 60,85 100,80 140,85 180,90 220,95 260,100"
+                    fill="none"
+                    stroke="#ff4d4f"
+                    stroke-width="2"
+                  />
+                </svg>
+              </div>
+              <div class="trend-insights">
+                <div class="insight-item">
+                  <span class="insight-label">该时间段内利润为负数</span>
+                  <span class="insight-value">-1.11%</span>
+                </div>
+                <div class="insight-item">
+                  <span class="insight-label">该时间段内利润率较低</span>
+                  <span class="insight-value">需要关注</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 单据应收 -->
+      <section id="customer-receivables" class="analysis-section">
+        <div class="section-header">
+          <div class="section-title-row">
+            <span class="section-number">5</span>
+            <h2 class="section-title">单据应收</h2>
+            <button class="detail-btn" @click="showReceivablesDetail">
+              详情说明
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,17A1.5,1.5 0 0,1 10.5,15.5A1.5,1.5 0 0,1 12,14A1.5,1.5 0 0,1 13.5,15.5A1.5,1.5 0 0,1 12,17M12,10.5C10.07,10.5 8.5,8.93 8.5,7A3.5,3.5 0 0,1 12,3.5A3.5,3.5 0 0,1 15.5,7C15.5,8.93 13.93,10.5 12,10.5Z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="receivables-list">
+          <div class="receivables-item" @click="showCustomerReceivables('吉利')">
+            <div class="customer-info">
+              <span class="customer-name">吉利</span>
+              <div class="receivables-amounts">
+                <span class="amount-item">应收金额: 7,006.40</span>
+                <span class="amount-item">已结金额: 8,582.40</span>
+                <span class="amount-item warning">未结金额: -1,576.00</span>
+              </div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"/>
+            </svg>
+          </div>
+
+          <div class="receivables-item" @click="showCustomerReceivables('客户2811')">
+            <div class="customer-info">
+              <span class="customer-name">客户2811</span>
+              <div class="receivables-amounts">
+                <span class="amount-item">应收金额: 4,000.00</span>
+                <span class="amount-item">已结金额: 4,000.00</span>
+                <span class="amount-item">未结金额: 0.00</span>
+              </div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"/>
+            </svg>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- 日期选择器弹窗 -->
+    <div v-if="showDatePicker" class="date-picker-overlay" @click="showDatePicker = false">
+      <div class="date-picker-modal" @click.stop>
+        <div class="date-picker-header">
+          <h3>选择时间范围</h3>
+          <button class="close-btn" @click="showDatePicker = false">×</button>
+        </div>
+        <div class="date-picker-content">
+          <div class="quick-dates">
+            <button
+              v-for="quick in quickDates"
+              :key="quick.key"
+              class="quick-date-btn"
+              @click="selectQuickDate(quick)"
+            >
+              {{ quick.label }}
+            </button>
+          </div>
+          <div class="custom-date">
+            <div class="date-input-group">
+              <label>开始日期</label>
+              <input type="date" v-model="customStartDate">
+            </div>
+            <div class="date-input-group">
+              <label>结束日期</label>
+              <input type="date" v-model="customEndDate">
+            </div>
+          </div>
+          <div class="date-picker-actions">
+            <button class="confirm-btn" @click="confirmDateSelection">确定</button>
           </div>
         </div>
       </div>
@@ -261,366 +500,218 @@
 
 <script>
 export default {
-  name: 'CustomerDimensionAnalysis',
+  name: 'CustomerAnalysis',
   data() {
     return {
-      // 界面状态
-      showTimePicker: false,
-      showDimensionPicker: false,
-      showAdvancedFilter: false,
-      showCustomerDetail: false,
-      isLoading: false,
-      
-      // 当前选择
-      selectedTimeValue: 'current_month',
-      selectedTimeRange: '06-01~06-20',
-      selectedAnalysis: 'employee',
-      
-      // 筛选条件
-      selectedEmployees: [],
-      selectedRegions: [],
-      selectedLevels: [],
-      
-      // 客户明细弹窗
-      detailModalTitle: '',
-      currentCustomerDetail: [],
-      
-      // 时间选项
-      timeOptions: [
-        { value: 'current_month', label: '本月 (06-01~06-20)' },
-        { value: 'last_month', label: '上月 (05-01~05-20)' },
-        { value: 'current_quarter', label: '本季度 (04-01~06-20)' },
-        { value: 'current_year', label: '今年 (01-01~06-20)' }
+      activeTab: 'customer-info',
+      isTabsSticky: false,
+      showDatePicker: false,
+      selectedDateRange: {
+        start: new Date(2025, 0, 1),
+        end: new Date(2025, 0, 31)
+      },
+      customStartDate: '',
+      customEndDate: '',
+      tabs: [
+        { key: 'customer-info', label: '客户信息' },
+        { key: 'customer-trade', label: '客户交易' },
+        { key: 'customer-coverage', label: '客户铺市' },
+        { key: 'customer-profit', label: '客户盈利' },
+        { key: 'customer-receivables', label: '单据应收' }
       ],
-      
-      // 分析维度选项
-      analysisOptions: [
-        { value: 'employee', label: '按员工分析', desc: '查看各员工的客户铺货情况' },
-        { value: 'region', label: '按区域分析', desc: '查看各区域的铺货数据对比' },
-        { value: 'department', label: '按部门分析', desc: '查看各部门的铺货效率' }
-      ],
-      
-      // 区域选项
-      regions: [
-        { value: 'lanzhou', label: '兰州地区' },
-        { value: 'tianshui', label: '天水地区' },
-        { value: 'baiyin', label: '白银地区' },
-        { value: 'jinchang', label: '金昌地区' },
-        { value: 'jiuquan', label: '酒泉地区' }
-      ],
-      
-      // 客户等级选项
-      customerLevels: [
-        { value: 'A', label: 'A类客户' },
-        { value: 'B', label: 'B类客户' },
-        { value: 'C', label: 'C类客户' }
-      ],
-      
-      // 所有员工列表（用于筛选）
-      allEmployees: [
-        { id: 1, name: '黄保杰', department: '销售一部' },
-        { id: 2, name: '李明华', department: '销售一部' },
-        { id: 3, name: '王建国', department: '销售二部' },
-        { id: 4, name: '张晓红', department: '销售二部' },
-        { id: 5, name: '陈志强', department: '销售三部' },
-        { id: 6, name: '刘芳芳', department: '销售三部' },
-        { id: 7, name: '赵敏敏', department: '销售一部' },
-        { id: 8, name: '孙伟伟', department: '销售二部' },
-        { id: 9, name: '周晓峰', department: '销售三部' },
-        { id: 10, name: '吴丽娟', department: '销售一部' },
-        { id: 11, name: '马国强', department: '销售二部' },
-        { id: 12, name: '郑小燕', department: '销售三部' },
-        { id: 13, name: '朱建华', department: '销售一部' },
-        { id: 14, name: '徐晓雯', department: '销售二部' },
-        { id: 15, name: '林志远', department: '销售三部' }
-      ],
-      
-      // 员工铺货数据列表
-      employeeList: [
-        {
-          id: 1,
-          name: '黄保杰',
-          department: '销售一部',
-          coveredCustomers: 28,
-          uncoveredCustomers: 7,
-          totalCustomers: 35,
-          coverageRate: 80.0
-        },
-        {
-          id: 2,
-          name: '李明华',
-          department: '销售一部',
-          coveredCustomers: 32,
-          uncoveredCustomers: 4,
-          totalCustomers: 36,
-          coverageRate: 88.9
-        },
-        {
-          id: 3,
-          name: '王建国',
-          department: '销售二部',
-          coveredCustomers: 25,
-          uncoveredCustomers: 10,
-          totalCustomers: 35,
-          coverageRate: 71.4
-        },
-        {
-          id: 4,
-          name: '张晓红',
-          department: '销售二部',
-          coveredCustomers: 30,
-          uncoveredCustomers: 5,
-          totalCustomers: 35,
-          coverageRate: 85.7
-        },
-        {
-          id: 5,
-          name: '陈志强',
-          department: '销售三部',
-          coveredCustomers: 22,
-          uncoveredCustomers: 13,
-          totalCustomers: 35,
-          coverageRate: 62.9
-        },
-        {
-          id: 6,
-          name: '刘芳芳',
-          department: '销售三部',
-          coveredCustomers: 26,
-          uncoveredCustomers: 9,
-          totalCustomers: 35,
-          coverageRate: 74.3
-        },
-        {
-          id: 7,
-          name: '赵敏敏',
-          department: '销售一部',
-          coveredCustomers: 29,
-          uncoveredCustomers: 6,
-          totalCustomers: 35,
-          coverageRate: 82.9
-        },
-        {
-          id: 8,
-          name: '孙伟伟',
-          department: '销售二部',
-          coveredCustomers: 27,
-          uncoveredCustomers: 8,
-          totalCustomers: 35,
-          coverageRate: 77.1
-        },
-        {
-          id: 9,
-          name: '周晓峰',
-          department: '销售三部',
-          coveredCustomers: 31,
-          uncoveredCustomers: 4,
-          totalCustomers: 35,
-          coverageRate: 88.6
-        },
-        {
-          id: 10,
-          name: '吴丽娟',
-          department: '销售一部',
-          coveredCustomers: 24,
-          uncoveredCustomers: 11,
-          totalCustomers: 35,
-          coverageRate: 68.6
-        },
-        {
-          id: 11,
-          name: '马国强',
-          department: '销售二部',
-          coveredCustomers: 33,
-          uncoveredCustomers: 2,
-          totalCustomers: 35,
-          coverageRate: 94.3
-        },
-        {
-          id: 12,
-          name: '郑小燕',
-          department: '销售三部',
-          coveredCustomers: 28,
-          uncoveredCustomers: 7,
-          totalCustomers: 35,
-          coverageRate: 80.0
-        },
-        {
-          id: 13,
-          name: '朱建华',
-          department: '销售一部',
-          coveredCustomers: 26,
-          uncoveredCustomers: 9,
-          totalCustomers: 35,
-          coverageRate: 74.3
-        },
-        {
-          id: 14,
-          name: '徐晓雯',
-          department: '销售二部',
-          coveredCustomers: 29,
-          uncoveredCustomers: 6,
-          totalCustomers: 35,
-          coverageRate: 82.9
-        },
-        {
-          id: 15,
-          name: '林志远',
-          department: '销售三部',
-          coveredCustomers: 20,
-          uncoveredCustomers: 15,
-          totalCustomers: 35,
-          coverageRate: 57.1
-        }
+      quickDates: [
+        { key: 'today', label: '今天' },
+        { key: 'yesterday', label: '昨天' },
+        { key: 'last7days', label: '最近7天' },
+        { key: 'last30days', label: '最近30天' },
+        { key: 'thisMonth', label: '本月' },
+        { key: 'lastMonth', label: '上月' }
       ]
     }
   },
-  
-  computed: {
-    // 合计员工数
-    totalEmployeeCount() {
-      return this.employeeList.length
-    }
+  mounted() {
+    this.setupScrollListener()
   },
-  
   methods: {
-    // 返回上一页
     goBack() {
       this.$router.go(-1)
     },
-    
-    // 切换到其他维度（品牌/商品）
-    switchToDimension(dimension) {
-      if (dimension === 'brand') {
-        // 跳转到品牌维度
-        this.$router.push('/market-analysis?tab=brand')
-      } else if (dimension === 'product') {
-        // 跳转到商品维度
-        this.$router.push('/market-analysis?tab=product')
-      }
-    },
-    
-    // 选择时间范围
-    selectTimeRange(option) {
-      this.selectedTimeValue = option.value
-      this.selectedTimeRange = option.label.match(/\(([^)]+)\)/)[1]
-      this.showTimePicker = false
-      this.loadEmployeeData()
-    },
-    
-    // 选择分析维度
-    selectAnalysis(option) {
-      this.selectedAnalysis = option.value
-      this.showDimensionPicker = false
-      this.loadEmployeeData()
-    },
-    
-    // 重置筛选条件
-    resetFilters() {
-      this.selectedEmployees = []
-      this.selectedRegions = []
-      this.selectedLevels = []
-    },
-    
-    // 应用筛选条件
-    applyFilters() {
-      this.showAdvancedFilter = false
-      this.loadEmployeeData()
-    },
-    
-    // 获取铺货率样式类
-    getRateClass(rate) {
-      if (rate >= 85) return 'rate-excellent'
-      if (rate >= 70) return 'rate-good'
-      if (rate >= 50) return 'rate-fair'
-      return 'rate-poor'
-    },
-    
-    // 跳转到员工分析页面
-    navigateToEmployeeAnalysis(employee) {
-      this.$router.push({
-        path: '/employee-detail-analysis',
-        query: {
-          employeeId: employee.id,
-          employeeName: employee.name,
-          dateRange: this.selectedTimeRange
-        }
-      })
-    },
-    
-    // 显示客户明细
-    showCustomerDetailModal(employee, type) {
-      this.currentEmployee = employee
-      this.detailType = type
-      
-      if (type === 'covered') {
-        this.detailModalTitle = `${employee.name} - 已铺货客户明细`
-        this.currentCustomerDetail = this.generateCustomerDetail(employee, true)
+
+    setupScrollListener() {
+      const mainContent = this.$refs.mainContent
+      if (mainContent) {
+        mainContent.addEventListener('scroll', this.handleScroll)
       } else {
-        this.detailModalTitle = `${employee.name} - 未铺货客户明细`
-        this.currentCustomerDetail = this.generateCustomerDetail(employee, false)
+        window.addEventListener('scroll', this.handleScroll)
       }
-      
-      this.showCustomerDetail = true
     },
-    
-    // 生成客户明细数据（模拟）
-    generateCustomerDetail(employee, isCovered) {
-      const count = isCovered ? employee.coveredCustomers : employee.uncoveredCustomers
-      const customers = []
-      
-      for (let i = 1; i <= count; i++) {
-        customers.push({
-          id: i,
-          name: `客户${String(i).padStart(3, '0')}`,
-          address: `甘肃省兰州市城关区街道${i}号`,
-          status: isCovered ? '已铺货' : '未铺货'
-        })
+
+    handleScroll() {
+      // 检查标签是否应该固定
+      const tabsElement = document.querySelector('.sticky-tabs')
+      if (tabsElement) {
+        const rect = tabsElement.getBoundingClientRect()
+        this.isTabsSticky = rect.top <= 0
       }
-      
-      return customers
+
+      // 更新活动标签
+      this.updateActiveTab()
     },
-    
-    // 导出数据
-    exportData() {
-      console.log('导出铺货数据:', {
-        timeRange: this.selectedTimeRange,
-        analysis: this.selectedAnalysis,
-        employeeCount: this.totalEmployeeCount
-      })
-      
-      alert('正在导出员工铺货数据...')
-    },
-    
-    // 加载员工数据
-    loadEmployeeData() {
-      this.isLoading = true
-      
-      // 模拟异步加载
-      setTimeout(() => {
-        console.log('加载员工铺货数据:', {
-          timeRange: this.selectedTimeRange,
-          analysis: this.selectedAnalysis,
-          filters: {
-            employees: this.selectedEmployees,
-            regions: this.selectedRegions,
-            levels: this.selectedLevels
+
+    updateActiveTab() {
+      const sections = this.tabs.map(tab => document.getElementById(tab.key))
+
+      for (let i = sections.length - 1; i >= 0; i--) {
+        const section = sections[i]
+        if (section) {
+          const rect = section.getBoundingClientRect()
+          if (rect.top <= 100) {
+            this.activeTab = this.tabs[i].key
+            break
           }
+        }
+      }
+    },
+
+    scrollToSection(sectionKey) {
+      const element = document.getElementById(sectionKey)
+      if (element) {
+        element.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
         })
-        
-        this.isLoading = false
-      }, 1000)
+      }
+    },
+
+    formatDateRange(range) {
+      const start = range.start.toLocaleDateString('zh-CN')
+      const end = range.end.toLocaleDateString('zh-CN')
+      return `${start} - ${end}`
+    },
+
+    selectQuickDate(quick) {
+      const today = new Date()
+      let start, end
+
+      switch (quick.key) {
+        case 'today':
+          start = end = new Date(today)
+          break
+        case 'yesterday':
+          start = end = new Date(today.getTime() - 24 * 60 * 60 * 1000)
+          break
+        case 'last7days':
+          start = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000)
+          end = new Date(today)
+          break
+        case 'last30days':
+          start = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000)
+          end = new Date(today)
+          break
+        case 'thisMonth':
+          start = new Date(today.getFullYear(), today.getMonth(), 1)
+          end = new Date(today)
+          break
+        case 'lastMonth':
+          start = new Date(today.getFullYear(), today.getMonth() - 1, 1)
+          end = new Date(today.getFullYear(), today.getMonth(), 0)
+          break
+      }
+
+      this.selectedDateRange = { start, end }
+      this.showDatePicker = false
+    },
+
+    confirmDateSelection() {
+      if (this.customStartDate && this.customEndDate) {
+        this.selectedDateRange = {
+          start: new Date(this.customStartDate),
+          end: new Date(this.customEndDate)
+        }
+      }
+      this.showDatePicker = false
+    },
+
+    // 业务方法
+    showUndeliveredCustomers() {
+      console.log('显示未铺货客户详情')
+    },
+
+    // 新增的移动端交互方法
+    showCustomerInfoDetail() {
+      console.log('显示客户信息详情说明')
+    },
+
+    showEffectiveCustomers() {
+      console.log('显示有效客户详情')
+    },
+
+    showNewCustomers() {
+      console.log('显示新增客户详情')
+    },
+
+    showTransactionDetail() {
+      console.log('显示交易分析详情说明')
+    },
+
+    showCoverageDetail() {
+      console.log('显示铺市分析详情说明')
+    },
+
+    showProfitDetail() {
+      console.log('显示利润分析详情说明')
+    },
+
+    showBreakdownDetail(type) {
+      console.log('显示利润拆解详情:', type)
+    },
+
+    showProfitTrend() {
+      console.log('显示利润趋势详情')
+    },
+
+    showCustomerReceivables(customerName) {
+      console.log('显示客户应收详情:', customerName)
+    },
+
+    showSegmentDetail(segment) {
+      console.log('显示客户分层详情:', segment)
+    },
+
+    showSalesPerformance() {
+      console.log('显示销售表现详情')
+    },
+
+    showReturnAnalysis() {
+      console.log('显示退货分析详情')
+    },
+
+    showBrandCoverage() {
+      console.log('显示品牌覆盖详情')
+    },
+
+    showProductCoverage() {
+      console.log('显示商品覆盖详情')
+    },
+
+    showCollectionTemplate() {
+      console.log('显示催收模板')
+    },
+
+    showReceivablesDetail() {
+      console.log('显示应收详情')
+    },
+
+    showRiskCustomers() {
+      console.log('显示风险客户')
     }
-  },
-  
-  mounted() {
-    // 初始化数据
-    this.loadEmployeeData()
   }
 }
 </script>
 
 <style scoped>
+@import '../styles/customer-analysis.css';
+
 /* CSS重置 - 超强制表格横向布局 */
 .customer-dimension-analysis *,
 .customer-dimension-analysis *::before,
@@ -1530,6 +1621,470 @@ export default {
 *[class*="employee"] th,
 *[class*="employee"] td {
   display: table-cell !important;
+}
+
+/* 移动端优化样式 */
+/* 固定标签导航样式 */
+.sticky-tabs {
+  background: white;
+  border-bottom: 1px solid #f0f0f0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  transition: box-shadow 0.2s ease;
+}
+
+.sticky-tabs.sticky {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.tab-container {
+  display: flex;
+  padding: 0 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.tab-container::-webkit-scrollbar {
+  display: none;
+}
+
+.tab-item {
+  flex-shrink: 0;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: #666;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.tab-item.active {
+  color: #1890ff;
+  border-bottom-color: #1890ff;
+}
+
+.tab-item:hover {
+  color: #1890ff;
+}
+
+/* 时间筛选区样式 */
+.time-filter-section {
+  padding: 12px 16px;
+  background: white;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.time-selector {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.time-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: transparent;
+  border: none;
+  color: #333;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.time-comparison {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: #666;
+}
+
+.comparison-text {
+  color: #999;
+}
+
+/* 分析部分标题样式 */
+.section-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.section-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: #1890ff;
+  color: white;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 600;
+  margin-right: 8px;
+}
+
+.detail-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: transparent;
+  border: none;
+  color: #1890ff;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.profit-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  color: #1890ff;
+  font-size: 14px;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 16px;
+}
+
+/* 移动端指标列表样式 */
+.mobile-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.metric-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.metric-row:hover {
+  background: #f8f9fa;
+}
+
+.metric-row.highlight {
+  background: #fff7e6;
+  border-left: 3px solid #fa8c16;
+}
+
+.metric-info {
+  flex: 1;
+}
+
+.metric-label {
+  display: block;
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.metric-value {
+  display: block;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.metric-desc {
+  font-size: 12px;
+  color: #999;
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+/* 交易分析样式 */
+.transaction-summary {
+  margin-bottom: 20px;
+}
+
+.summary-row {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.summary-item {
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.summary-label {
+  display: block;
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.summary-value {
+  display: block;
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.summary-comparison {
+  display: flex;
+  gap: 16px;
+}
+
+.comparison-item {
+  font-size: 12px;
+  color: #666;
+}
+
+/* 移动端分析列表样式 */
+.mobile-analysis-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.analysis-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.analysis-item:hover {
+  background: #f8f9fa;
+}
+
+.analysis-info {
+  flex: 1;
+}
+
+.analysis-label {
+  display: block;
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.analysis-desc {
+  font-size: 14px;
+  color: #666;
+}
+
+/* 利润分析样式 */
+.profit-summary {
+  margin-bottom: 20px;
+}
+
+.profit-main {
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.profit-label {
+  display: block;
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.profit-value {
+  display: block;
+  font-size: 32px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.profit-value.negative {
+  color: #ff4d4f;
+}
+
+.profit-comparison {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.breakdown-table {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.breakdown-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.breakdown-row:hover {
+  background: #f8f9fa;
+}
+
+.breakdown-info {
+  flex: 1;
+}
+
+.breakdown-label {
+  display: block;
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.breakdown-value {
+  display: block;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.breakdown-value.positive {
+  color: #52c41a;
+}
+
+.breakdown-value.negative {
+  color: #ff4d4f;
+}
+
+.breakdown-trend {
+  text-align: right;
+}
+
+.trend-text {
+  font-size: 12px;
+  color: #666;
+}
+
+/* 趋势分析样式 */
+.profit-trend {
+  margin-bottom: 20px;
+}
+
+.trend-section {
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.trend-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 12px;
+}
+
+.trend-chart {
+  cursor: pointer;
+}
+
+.chart-placeholder {
+  margin-bottom: 12px;
+}
+
+.trend-insights {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.insight-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+}
+
+.insight-label {
+  color: #666;
+}
+
+.insight-value {
+  color: #ff4d4f;
+  font-weight: 500;
+}
+
+/* 应收账款样式 */
+.receivables-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.receivables-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.receivables-item:hover {
+  background: #f8f9fa;
+}
+
+.customer-info {
+  flex: 1;
+}
+
+.customer-name {
+  display: block;
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.receivables-amounts {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.amount-item {
+  font-size: 12px;
+  color: #666;
+}
+
+.amount-item.warning {
+  color: #ff4d4f;
 }
 
 /* 动画效果 */

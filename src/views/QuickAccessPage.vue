@@ -262,7 +262,7 @@ export default {
       
       // 综合业务域
       comprehensiveApps: [
-        { id: 101, name: '核心业务指标', icon: '📊', route: '/core-metrics', colorClass: 'blue', domain: '综合业务', description: '销售额、回款、利润等核心指标' },
+        { id: 101, name: '核心业务指标', icon: '📊', route: '/core-business-indicators', colorClass: 'blue', domain: '综合业务', description: '销售额、回款、利润等核心指标' },
         { id: 102, name: '智慧拓店', icon: '🏪', route: '/smart-expansion', colorClass: 'blue', domain: '综合业务', description: '基于数据推荐潜在优质门店' },
         { id: 103, name: '电视大屏', icon: '📺', route: '/tv-dashboard', colorClass: 'blue', domain: '综合业务', description: '会议大屏数据展示' },
         { id: 104, name: '目标管理', icon: '🎯', route: '/goal-management', colorClass: 'orange', domain: '综合业务', description: '销售、订单目标设定与追踪' },
